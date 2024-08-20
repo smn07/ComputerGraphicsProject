@@ -1,2 +1,231 @@
-﻿LINK : warning LNK4098: defaultlib 'MSVCRT' conflicts with use of other libs; use /NODEFAULTLIB:library
+﻿  A10.cpp
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\headers\tiny_gltf.h(3039,17): warning C4018: '>=': signed/unsigned mismatch
+  (compiling source file 'A10.cpp')
+  
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\headers\tiny_gltf.h(3134,17): warning C4018: '>=': signed/unsigned mismatch
+  (compiling source file 'A10.cpp')
+  
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\headers\tiny_gltf.h(5176,44): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+  (compiling source file 'A10.cpp')
+  
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\headers\tiny_gltf.h(5205,59): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+  (compiling source file 'A10.cpp')
+  
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\headers\tiny_gltf.h(5393,48): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+  (compiling source file 'A10.cpp')
+  
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(349,15): warning C4099: 'VertexDescriptor': type name first seen using 'struct' now seen using 'class'
+  (compiling source file 'A10.cpp')
+  C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(202,8):
+  see declaration of 'VertexDescriptor'
+  
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(351,15): warning C4099: 'Texture': type name first seen using 'struct' now seen using 'class'
+  (compiling source file 'A10.cpp')
+  C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(248,8):
+  see declaration of 'Texture'
+  
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(352,15): warning C4099: 'Pipeline': type name first seen using 'struct' now seen using 'class'
+  (compiling source file 'A10.cpp')
+  C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(294,8):
+  see declaration of 'Pipeline'
+  
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(353,15): warning C4099: 'DescriptorSetLayout': type name first seen using 'struct' now seen using 'class'
+  (compiling source file 'A10.cpp')
+  C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(284,8):
+  see declaration of 'DescriptorSetLayout'
+  
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(354,15): warning C4099: 'DescriptorSet': type name first seen using 'struct' now seen using 'class'
+  (compiling source file 'A10.cpp')
+  C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(323,8):
+  see declaration of 'DescriptorSet'
+  
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(1573,45): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+  (compiling source file 'A10.cpp')
+  
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(1840,16): warning C4244: '=': conversion from 'double' to 'T', possible loss of data
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(1840,16): warning C4244:         with
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(1840,16): warning C4244:         [
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(1840,16): warning C4244:             T=float
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(1840,16): warning C4244:         ]
+  (compiling source file 'A10.cpp')
+  
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(1841,16): warning C4244: '=': conversion from 'double' to 'T', possible loss of data
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(1841,16): warning C4244:         with
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(1841,16): warning C4244:         [
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(1841,16): warning C4244:             T=float
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(1841,16): warning C4244:         ]
+  (compiling source file 'A10.cpp')
+  
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(2530,50): warning C4267: 'argument': conversion from 'size_t' to '_Ty', possible loss of data
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(2530,50): warning C4267:         with
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(2530,50): warning C4267:         [
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(2530,50): warning C4267:             _Ty=unsigned int
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(2530,50): warning C4267:         ]
+  (compiling source file 'A10.cpp')
+  
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(2559,135): warning C4267: 'argument': conversion from 'size_t' to 'const unsigned long', possible loss of data
+  (compiling source file 'A10.cpp')
+  
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(2559,97): warning C4267: 'argument': conversion from 'size_t' to 'const unsigned long', possible loss of data
+  (compiling source file 'A10.cpp')
+  
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(2559,76): warning C4267: 'argument': conversion from 'size_t' to 'const unsigned long', possible loss of data
+  (compiling source file 'A10.cpp')
+  
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(2571,71): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+  (compiling source file 'A10.cpp')
+  
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(2613,25): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+  (compiling source file 'A10.cpp')
+  
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(2627,27): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+  (compiling source file 'A10.cpp')
+  
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(2641,25): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+  (compiling source file 'A10.cpp')
+  
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(2655,23): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+  (compiling source file 'A10.cpp')
+  
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(2770,36): warning C4244: 'argument': conversion from '_Ty' to 'T', possible loss of data
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(2770,36): warning C4244:         with
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(2770,36): warning C4244:         [
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(2770,36): warning C4244:             _Ty=double
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(2770,36): warning C4244:         ]
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(2770,36): warning C4244:         and
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(2770,36): warning C4244:         [
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(2770,36): warning C4244:             T=float
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(2770,36): warning C4244:         ]
+  (compiling source file 'A10.cpp')
+  
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(2769,36): warning C4244: 'argument': conversion from '_Ty' to 'T', possible loss of data
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(2769,36): warning C4244:         with
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(2769,36): warning C4244:         [
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(2769,36): warning C4244:             _Ty=double
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(2769,36): warning C4244:         ]
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(2769,36): warning C4244:         and
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(2769,36): warning C4244:         [
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(2769,36): warning C4244:             T=float
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(2769,36): warning C4244:         ]
+  (compiling source file 'A10.cpp')
+  
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(2768,36): warning C4244: 'argument': conversion from '_Ty' to 'T', possible loss of data
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(2768,36): warning C4244:         with
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(2768,36): warning C4244:         [
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(2768,36): warning C4244:             _Ty=double
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(2768,36): warning C4244:         ]
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(2768,36): warning C4244:         and
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(2768,36): warning C4244:         [
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(2768,36): warning C4244:             T=float
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(2768,36): warning C4244:         ]
+  (compiling source file 'A10.cpp')
+  
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(2767,45): warning C4244: 'argument': conversion from '_Ty' to 'T', possible loss of data
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(2767,45): warning C4244:         with
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(2767,45): warning C4244:         [
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(2767,45): warning C4244:             _Ty=double
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(2767,45): warning C4244:         ]
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(2767,45): warning C4244:         and
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(2767,45): warning C4244:         [
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(2767,45): warning C4244:             T=float
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(2767,45): warning C4244:         ]
+  (compiling source file 'A10.cpp')
+  
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(3177,46): warning C4267: '=': conversion from 'size_t' to 'uint32_t', possible loss of data
+  (compiling source file 'A10.cpp')
+  
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\Starter.hpp(3305,11): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+  (compiling source file 'A10.cpp')
+  
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\TextMaker.hpp(9,109): warning C4305: 'initializing': truncation from 'double' to 'const float'
+  (compiling source file 'A10.cpp')
+  
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\TextMaker.hpp(9,116): warning C4305: 'initializing': truncation from 'double' to 'const float'
+  (compiling source file 'A10.cpp')
+  
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\TextMaker.hpp(9,130): warning C4305: 'initializing': truncation from 'double' to 'const float'
+  (compiling source file 'A10.cpp')
+  
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\TextMaker.hpp(9,136): warning C4305: 'initializing': truncation from 'double' to 'const float'
+  (compiling source file 'A10.cpp')
+  
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\TextMaker.hpp(107,21): warning C4267: '+=': conversion from 'size_t' to 'int', possible loss of data
+  (compiling source file 'A10.cpp')
+  
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\TextMaker.hpp(116,16): warning C4305: 'initializing': truncation from 'double' to 'float'
+  (compiling source file 'A10.cpp')
+  
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\TextMaker.hpp(117,16): warning C4305: 'initializing': truncation from 'double' to 'float'
+  (compiling source file 'A10.cpp')
+  
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\TextMaker.hpp(118,16): warning C4305: 'initializing': truncation from 'double' to 'float'
+  (compiling source file 'A10.cpp')
+  
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\modules\TextMaker.hpp(119,16): warning C4305: 'initializing': truncation from 'double' to 'float'
+  (compiling source file 'A10.cpp')
+  
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\Mesh.hpp(93,13): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  (compiling source file 'A10.cpp')
+  
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\Mesh.hpp(96,36): warning C4267: '=': conversion from 'size_t' to '_Ty', possible loss of data
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\Mesh.hpp(96,36): warning C4267:         with
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\Mesh.hpp(96,36): warning C4267:         [
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\Mesh.hpp(96,36): warning C4267:             _Ty=unsigned int
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\Mesh.hpp(96,36): warning C4267:         ]
+  (compiling source file 'A10.cpp')
+  
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\Mesh.hpp(105,13): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  (compiling source file 'A10.cpp')
+  
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\Mesh.hpp(108,36): warning C4267: '=': conversion from 'size_t' to '_Ty', possible loss of data
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\Mesh.hpp(108,36): warning C4267:         with
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\Mesh.hpp(108,36): warning C4267:         [
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\Mesh.hpp(108,36): warning C4267:             _Ty=unsigned int
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\Mesh.hpp(108,36): warning C4267:         ]
+  (compiling source file 'A10.cpp')
+  
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\Mesh.hpp(163,13): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  (compiling source file 'A10.cpp')
+  
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\Mesh.hpp(167,36): warning C4267: '=': conversion from 'size_t' to '_Ty', possible loss of data
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\Mesh.hpp(167,36): warning C4267:         with
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\Mesh.hpp(167,36): warning C4267:         [
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\Mesh.hpp(167,36): warning C4267:             _Ty=unsigned int
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\Mesh.hpp(167,36): warning C4267:         ]
+  (compiling source file 'A10.cpp')
+  
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\Mesh.hpp(239,14): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  (compiling source file 'A10.cpp')
+  
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\Mesh.hpp(242,58): warning C4267: '=': conversion from 'size_t' to '_Ty', possible loss of data
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\Mesh.hpp(242,58): warning C4267:         with
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\Mesh.hpp(242,58): warning C4267:         [
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\Mesh.hpp(242,58): warning C4267:             _Ty=unsigned int
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\Mesh.hpp(242,58): warning C4267:         ]
+  (compiling source file 'A10.cpp')
+  
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\Mesh.hpp(265,63): warning C4267: '=': conversion from 'size_t' to '_Ty', possible loss of data
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\Mesh.hpp(265,63): warning C4267:         with
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\Mesh.hpp(265,63): warning C4267:         [
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\Mesh.hpp(265,63): warning C4267:             _Ty=unsigned int
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\Mesh.hpp(265,63): warning C4267:         ]
+  (compiling source file 'A10.cpp')
+  
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\Mesh.hpp(272,76): warning C4267: '=': conversion from 'size_t' to '_Ty', possible loss of data
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\Mesh.hpp(272,76): warning C4267:         with
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\Mesh.hpp(272,76): warning C4267:         [
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\Mesh.hpp(272,76): warning C4267:             _Ty=unsigned int
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\Mesh.hpp(272,76): warning C4267:         ]
+  (compiling source file 'A10.cpp')
+  
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\A10.cpp(262,45): warning C4305: 'initializing': truncation from 'double' to 'float'
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\A10.cpp(377,12): warning C4305: '=': truncation from 'double' to 'float'
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\A10.cpp(378,12): warning C4305: '=': truncation from 'double' to 'float'
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\A10.cpp(385,12): warning C4305: '=': truncation from 'double' to 'float'
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\A10.cpp(386,12): warning C4305: '=': truncation from 'double' to 'float'
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\A10.cpp(392,12): warning C4305: '=': truncation from 'double' to 'float'
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\A10.cpp(393,12): warning C4305: '=': truncation from 'double' to 'float'
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\A10.cpp(399,12): warning C4305: '=': truncation from 'double' to 'float'
+C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\ComputerGraphicsProject\A10.cpp(400,12): warning C4305: '=': truncation from 'double' to 'float'
+LINK : warning LNK4098: defaultlib 'MSVCRT' conflicts with use of other libs; use /NODEFAULTLIB:library
   ComputerGraphicsProject.vcxproj -> C:\Users\sim.diienno1\Documents\Visual Studio 2022\ComputerGraphicsProject\x64\Debug\ComputerGraphicsProject.exe

@@ -2,6 +2,7 @@
 
 #include "modules/Starter.hpp"
 #include "modules/TextMaker.hpp"
+#include "Mesh.hpp"
 
 
 std::vector<SingleText> outText = {
@@ -9,21 +10,12 @@ std::vector<SingleText> outText = {
 	{1, {"Saving Screenshots. Please wait.", "", "",""}, 0, 0}
 };
 
+
+
+
 // The uniform buffer object used in this example
 #define NSHIP 16
-struct BlinnUniformBufferObject {
-	alignas(16) glm::mat4 mvpMat[NSHIP];
-	alignas(16) glm::mat4 mMat[NSHIP];
-	alignas(16) glm::mat4 nMat[NSHIP];
-};
 
-struct BlinnMatParUniformBufferObject {
-	alignas(4)  float Power;
-};
-
-struct EmissionUniformBufferObject {
-	alignas(16) glm::mat4 mvpMat;
-};
 
 struct GlobalUniformBufferObject {
 	alignas(16) glm::vec3 lightDir;
@@ -31,34 +23,22 @@ struct GlobalUniformBufferObject {
 	alignas(16) glm::vec3 eyePos;
 };
 
-struct skyBoxUniformBufferObject {
+
+
+struct RoomUniformBufferObject {
 	alignas(16) glm::mat4 mvpMat;
 };
-
-// **A10** Place here the CPP struct for the uniform buffer for the matrices
-
-// **A10** Place here the CPP struct for the uniform buffer for the parameters
 
 
 
 
 // The vertices data structures
-struct BlinnVertex {
+
+struct RoomVertex {
 	glm::vec3 pos;
 	glm::vec3 norm;
 	glm::vec2 UV;
 };
-
-struct EmissionVertex {
-	glm::vec3 pos;
-	glm::vec2 UV;
-};
-
-struct skyBoxVertex {
-	glm::vec3 pos;
-};
-
-// **A10** Place here the CPP struct for the vertex definition
 
 
 
@@ -67,43 +47,28 @@ class A10 : public BaseProject {
 	protected:
 	
 	// Descriptor Layouts ["classes" of what will be passed to the shaders]
-	DescriptorSetLayout DSLGlobal;	// For Global values
 
-	DescriptorSetLayout DSLBlinn;	// For Blinn Objects
-	DescriptorSetLayout DSLEmission;	// For Emission Objects
-	DescriptorSetLayout DSLskyBox;	// For skyBox
+	DescriptorSetLayout DSLGlobal;	// For Global
 
-// **A10** Place here the variable for the DescriptorSetLayout
+	DescriptorSetLayout DSLRoom;	// For Room
 
-	// Vertex formats
-	VertexDescriptor VDBlinn;
-	VertexDescriptor VDEmission;
-	VertexDescriptor VDskyBox;
-// **A10** Place here the variable for the VertexDescriptor
+
+	// vertex descriptor for the room
+	VertexDescriptor VDRoom;
 
 	// Pipelines [Shader couples]
-	Pipeline PBlinn;
-	Pipeline PEmission;
-	Pipeline PskyBox;
-// **A10** Place here the variable for the Pipeline
+
+	Pipeline PRoom;
 
 	// Scenes and texts
     TextMaker txt;
 
 	// Models, textures and Descriptor Sets (values assigned to the uniforms)
 	DescriptorSet DSGlobal;
-	
-	Model Mship;
-	Texture Tship;
-	DescriptorSet DSship;
-	
-	Model Msun;
-	Texture Tsun;
-	DescriptorSet DSsun;
-	
-	Model MskyBox;
-	Texture TskyBox, Tstars;
-	DescriptorSet DSskyBox;
+
+	Model MroomFace;
+	Texture Troom;
+	DescriptorSet DSRoom;
 
 // **A10** Place here the variables for the Model, the five texture (diffuse, specular, normal map, emission and clouds) and the Descrptor Set
 
@@ -122,7 +87,7 @@ class A10 : public BaseProject {
 		// window size, titile and initial background
 		windowWidth = 800;
 		windowHeight = 600;
-		windowTitle = "A10 - Adding an object";
+		windowTitle = "project";
     	windowResizable = GLFW_TRUE;
 		initialBackgroundColor = {0.1f, 0.1f, 0.1f, 1.0f};
 		
@@ -142,84 +107,44 @@ class A10 : public BaseProject {
 		DSLGlobal.init(this, {
 					{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS, sizeof(GlobalUniformBufferObject), 1}
 				});
-		DSLBlinn.init(this, {
-					{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, sizeof(BlinnUniformBufferObject), 1},
-					{1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 0, 1},
-					{2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT, sizeof(BlinnMatParUniformBufferObject), 1}
-				});
-		DSLEmission.init(this, {
-					{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, sizeof(EmissionUniformBufferObject), 1},
-					{1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 0, 1}
-				});
-		DSLskyBox.init(this, {
-					{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, sizeof(skyBoxUniformBufferObject), 1},
-					{1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 0, 1},
-					{2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 1, 1}
-				  });
-// **A10** Place here the initialization of the the DescriptorSetLayout
+
+		DSLRoom.init(this, {
+			{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, sizeof(RoomUniformBufferObject), 1},
+			{1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 0, 1},
+			});
+
 
 		// Vertex descriptors
-		VDBlinn.init(this, {
-				  {0, sizeof(BlinnVertex), VK_VERTEX_INPUT_RATE_VERTEX}
-				}, {
-				  {0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(BlinnVertex, pos),
-				         sizeof(glm::vec3), POSITION},
-				  {0, 1, VK_FORMAT_R32G32B32_SFLOAT, offsetof(BlinnVertex, norm),
-				         sizeof(glm::vec3), NORMAL},
-				  {0, 2, VK_FORMAT_R32G32_SFLOAT, offsetof(BlinnVertex, UV),
-				         sizeof(glm::vec2), UV}
-				});
-		VDEmission.init(this, {
-				  {0, sizeof(EmissionVertex), VK_VERTEX_INPUT_RATE_VERTEX}
-				}, {
-				  {0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(EmissionVertex, pos),
-				         sizeof(glm::vec3), POSITION},
-				  {0, 1, VK_FORMAT_R32G32_SFLOAT, offsetof(EmissionVertex, UV),
-				         sizeof(glm::vec2), UV}
-				});
-		VDskyBox.init(this, {
-				  {0, sizeof(skyBoxVertex), VK_VERTEX_INPUT_RATE_VERTEX}
-				}, {
-				  {0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(skyBoxVertex, pos),
-				         sizeof(glm::vec3), POSITION}
-				});
+
+		VDRoom.init(this, {
+		  {0, sizeof(RoomVertex), VK_VERTEX_INPUT_RATE_VERTEX}
+			}, {
+			  {0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(RoomVertex, pos),
+					 sizeof(glm::vec3), POSITION},
+			  {0, 1, VK_FORMAT_R32G32B32_SFLOAT, offsetof(RoomVertex, norm),
+					 sizeof(glm::vec3), NORMAL},
+			  {0, 2, VK_FORMAT_R32G32_SFLOAT, offsetof(RoomVertex, UV),
+					 sizeof(glm::vec2), UV}
+			});
+
+
 // **A10** Place here the initialization for the VertexDescriptor
 
 		// Pipelines [Shader couples]
-		PBlinn.init(this, &VDBlinn,  "shaders/BlinnVert.spv",    "shaders/BlinnFrag.spv", {&DSLGlobal, &DSLBlinn});
-		PEmission.init(this, &VDEmission,  "shaders/EmissionVert.spv",    "shaders/EmissionFrag.spv", {&DSLEmission});
-		PskyBox.init(this, &VDskyBox, "shaders/SkyBoxVert.spv", "shaders/SkyBoxFrag.spv", {&DSLskyBox});
-		PskyBox.setAdvancedFeatures(VK_COMPARE_OP_LESS_OR_EQUAL, VK_POLYGON_MODE_FILL,
+		PRoom.init(this, &VDRoom, "shaders/SkyBoxVert.spv", "shaders/SkyBoxFrag.spv", { &DSLGlobal,&DSLRoom});
+		PRoom.setAdvancedFeatures(VK_COMPARE_OP_LESS_OR_EQUAL, VK_POLYGON_MODE_FILL,
  								    VK_CULL_MODE_BACK_BIT, false);
-// **A10** Place here the initialization of the pipeline. Remember that it should use shaders in files
-//		"shaders/NormalMapVert.spv" and "shaders/NormalMapFrag.spv", it should receive the new VertexDescriptor you defined
-//		And should receive two DescriptorSetLayout, the first should be DSLGlobal, while the other must be the one you defined
+
 
 		// Create models
-		Mship.init(this, &VDBlinn, "models/X-WING-baker.obj", OBJ);
-		Msun.init(this, &VDEmission, "models/Sphere.obj", OBJ);
-		MskyBox.init(this, &VDskyBox, "models/SkyBoxCube.obj", OBJ);
+
+		MroomFace.init(this, &VDRoom, "models/Walls_010_Plane.004.mgcg", MGCG);
 // **A10** Place here the loading of the model. It should be contained in file "models/Sphere.gltf", it should use the
 //		Vertex descriptor you defined, and be of GLTF format.
 		
 		// Create the textures
-		Tship.init(this, "textures/XwingColors.png");
-		Tsun.init(this, "textures/2k_sun.jpg");
-		TskyBox.init(this, "textures/starmap_g4k.jpg");
-		Tstars.init(this, "textures/constellation_figures.png");
-// **A10** Place here the loading of the four textures
-		// Diffuse color of the planet in: "2k_earth_daymap.jpg"
 
-		// Specular color of the planet in: "2k_earth_specular_map.png"
-
-		// Normal map of the planet in: "2k_earth_normal_map.png"
-		// note that it must add a special feature to support the normal map, in particular
-		// the init function should be the following: .init(this, "textures/2k_earth_normal_map.png", VK_FORMAT_R8G8B8A8_UNORM);
-
-		// Emission map in: "2k_earth_nightmap.jpg"
-
-		// Clouds map in: "2k_earth_clouds.jpg"
-
+		Troom.init(this, "textures/Textures_Forniture.png");
 
 		// Descriptor pool sizes
 		// WARNING!!!!!!!!
@@ -243,15 +168,11 @@ std::cout << "Initializing text\n";
 	// Here you create your pipelines and Descriptor Sets!
 	void pipelinesAndDescriptorSetsInit() {
 		// This creates a new pipeline (with the current surface), using its shaders
-		PBlinn.create();
-		PEmission.create();
-		PskyBox.create();
-// **A10** Add the pipeline creation
 
-		// Here you define the data set
-		DSship.init(this, &DSLBlinn, {&Tship});
-		DSsun.init(this, &DSLEmission, {&Tsun});
-		DSskyBox.init(this, &DSLskyBox, {&TskyBox, &Tstars});
+		PRoom.create();
+
+
+		DSRoom.init(this, &DSLRoom, {&Troom});
 // **A10** Add the descriptor set creation
 // Textures should be passed in the diffuse, specular, normal map, emission and clouds order.
 			
@@ -264,16 +185,13 @@ std::cout << "Initializing text\n";
 	// All the object classes defined in Starter.hpp have a method .cleanup() for this purpose
 	void pipelinesAndDescriptorSetsCleanup() {
 		// Cleanup pipelines
-		PBlinn.cleanup();
-		PEmission.cleanup();
-		PskyBox.cleanup();
-// **A10** Add the pipeline cleanup
 
-		DSship.cleanup();
-		DSsun.cleanup();
-		DSskyBox.cleanup();
+		PRoom.cleanup();
+
+
 		DSGlobal.cleanup();
-// **A10** Add the descriptor set cleanup
+		DSRoom.cleanup();
+
 
 		txt.pipelinesAndDescriptorSetsCleanup();
 	}
@@ -283,30 +201,20 @@ std::cout << "Initializing text\n";
 	// You also have to destroy the pipelines: since they need to be rebuilt, they have two different
 	// methods: .cleanup() recreates them, while .destroy() delete them completely
 	void localCleanup() {	
-		Tship.cleanup();
-		Mship.cleanup();
 
-		Tsun.cleanup();
-		Msun.cleanup();
+		Troom.cleanup();
+		MroomFace.cleanup();
 
-		TskyBox.cleanup();
-		Tstars.cleanup();
-		MskyBox.cleanup();
-// **A10** Add the cleanup for models and textures
 		
 		
 		// Cleanup descriptor set layouts
-		DSLBlinn.cleanup();
-		DSLEmission.cleanup();
+
 		DSLGlobal.cleanup();
-		DSLskyBox.cleanup();
-// **A10** Add the cleanup for the descriptor set layout
+		DSLRoom.cleanup();
+
 		
 		// Destroies the pipelines
-		PBlinn.destroy();
-		PEmission.destroy();
-		PskyBox.destroy();
-// **A10** Add the cleanup for the pipeline
+		PRoom.destroy();
 
 		txt.localCleanup();		
 	}
@@ -317,36 +225,21 @@ std::cout << "Initializing text\n";
 	
 	void populateCommandBuffer(VkCommandBuffer commandBuffer, int currentImage) {
 		// binds the pipeline
-		PBlinn.bind(commandBuffer);
+
+		PRoom.bind(commandBuffer);
 		
 		// The models (both index and vertex buffers)
-		Mship.bind(commandBuffer);
+
+		MroomFace.bind(commandBuffer);
 		
 		// The descriptor sets, for each descriptor set specified in the pipeline
-		DSGlobal.bind(commandBuffer, PBlinn, 0, currentImage);	// The Global Descriptor Set (Set 0)
-		DSship.bind(commandBuffer, PBlinn, 1, currentImage);	// The Material and Position Descriptor Set (Set 1)
+		DSGlobal.bind(commandBuffer, PRoom, 0, currentImage);	// The Global Descriptor Set (Set 0)
+
+		DSRoom.bind(commandBuffer, PRoom, 1, currentImage);	// The Room Descriptor Set (Set 1)
 					
 		// The actual draw call.
 		vkCmdDrawIndexed(commandBuffer,
-				static_cast<uint32_t>(Mship.indices.size()), NSHIP, 0, 0, 0);	
-
-
-
-
-		PEmission.bind(commandBuffer);
-		Msun.bind(commandBuffer);
-		DSsun.bind(commandBuffer, PEmission, 0, currentImage);
-		vkCmdDrawIndexed(commandBuffer,
-				static_cast<uint32_t>(Msun.indices.size()), 1, 0, 0, 0);	
-
-
-		PskyBox.bind(commandBuffer);
-		MskyBox.bind(commandBuffer);
-		DSskyBox.bind(commandBuffer, PskyBox, 0, currentImage);
-		vkCmdDrawIndexed(commandBuffer,
-					static_cast<uint32_t>(MskyBox.indices.size()), 1, 0, 0, 0);
-
-// **A10** Add the commands to bind the pipeline, the mesh its two descriptor setes, and the draw call of the planet
+				static_cast<uint32_t>(MroomFace.indices.size()), NSHIP, 0, 0, 0);	
 
 
 		txt.populateCommandBuffer(commandBuffer, currentImage, currScene);
@@ -555,30 +448,13 @@ ShowTexture    = 0;
 		DSGlobal.map(currentImage, &gubo, 0);
 
 		// objects
-		BlinnUniformBufferObject blinnUbo{};
-		BlinnMatParUniformBufferObject blinnMatParUbo{};
+		RoomUniformBufferObject roomUbo{};
 
-		for(int j = 0; j < 4; j++) {
-			for(int k = 0; k < 4; k++) {
-				int i = j*4+k;
-				blinnUbo.mMat[i] = glm::translate(glm::mat4(1),glm::vec3((k-1)*5+((j+5)*3+10)*cos(j*1.4),(j-1)*5+((k+5)*2.5+10)*sin(j*1.4)*cos(i*0.2),((k+2.5)*3.2+8)*sin(j*1.4)*sin(k*0.2))) * glm::scale(glm::mat4(1), glm::vec3(0.5,0.5,0.5)) * baseTr;
-				blinnUbo.mvpMat[i] = ViewPrj * blinnUbo.mMat[i];
-				blinnUbo.nMat[i] = glm::inverse(glm::transpose(blinnUbo.mMat[i]));
-			}
-		}
-		DSship.map(currentImage, &blinnUbo, 0);
-
-		blinnMatParUbo.Power = 200.0;
-		DSship.map(currentImage, &blinnMatParUbo, 2);
+		roomUbo.mvpMat = ViewPrj;
 
 
-		EmissionUniformBufferObject emissionUbo{};
-		emissionUbo.mvpMat = ViewPrj * glm::translate(glm::mat4(1), gubo.lightDir * 40.0f) * baseTr;
-		DSsun.map(currentImage, &emissionUbo, 0);
-		
-		skyBoxUniformBufferObject sbubo{};
-		sbubo.mvpMat = M * glm::mat4(glm::mat3(Mv));
-		DSskyBox.map(currentImage, &sbubo, 0);
+		DSRoom.map(currentImage, &roomUbo, 0);
+
 		
 // **A10** Add to compute the uniforms and pass them to the shaders. You need two uniforms: one for the matrices, and the other for the material parameters.
 

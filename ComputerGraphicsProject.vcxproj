@@ -376,6 +376,7 @@
     <ClInclude Include="headers\stb_image_write.h" />
     <ClInclude Include="headers\tiny_gltf.h" />
     <ClInclude Include="headers\tiny_obj_loader.h" />
+    <ClInclude Include="Mesh.hpp" />
     <ClInclude Include="modules\Scene.hpp" />
     <ClInclude Include="modules\Starter.hpp" />
     <ClInclude Include="modules\TextMaker.hpp" />
@@ -554,6 +555,7 @@
     <Image Include="textures\constellation_figures.png" />
     <Image Include="textures\Fonts.png" />
     <Image Include="textures\starmap_g4k.jpg" />
+    <Image Include="textures\Textures_Forniture.png" />
     <Image Include="textures\XwingColors.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
