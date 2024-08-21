@@ -36,7 +36,6 @@ struct RoomUniformBufferObject {
 
 struct RoomVertex {
 	glm::vec3 pos;
-	glm::vec3 norm;
 	glm::vec2 UV;
 };
 
@@ -50,7 +49,7 @@ class A10 : public BaseProject {
 
 	DescriptorSetLayout DSLGlobal;	// For Global
 
-	DescriptorSetLayout DSLRoom;	// For Room
+	DescriptorSetLayout DSLRoomFace;	// For Room
 
 
 	// vertex descriptor for the room
@@ -58,29 +57,30 @@ class A10 : public BaseProject {
 
 	// Pipelines [Shader couples]
 
-	Pipeline PRoom;
+	Pipeline PRoomFrontFace,PRoomRightFace,PRoomLeftFace,PRoomBottomFace;
 
 	// Scenes and texts
     TextMaker txt;
 
 	// Models, textures and Descriptor Sets (values assigned to the uniforms)
-	DescriptorSet DSGlobal;
+	DescriptorSet DSGlobalFrontFace, DSGlobalRigthFace;
 
 	Model MroomFace;
 	Texture Troom;
-	DescriptorSet DSRoom;
+	DescriptorSet DSRoomFrontFace, DSRoomRightFace, DSRoomLeftFace, DSRoomBottomFace;
 
 // **A10** Place here the variables for the Model, the five texture (diffuse, specular, normal map, emission and clouds) and the Descrptor Set
 
 	
-	// Other application parameters
+// Other application parameters
 	int currScene = 0;
 	int subpass = 0;
-		
-	glm::vec3 CamPos = glm::vec3(0.0, 0.1, 5.0);
-	glm::mat4 ViewMatrix;
 
+	glm::vec3 CamPos = glm::vec3(0.0, 1.5, 7.0);
+	float CamAlpha = 0.0f;
+	float CamBeta = 0.0f;
 	float Ar;
+	glm::mat4 ViewMatrix;
 	
 	// Here you set the main application parameters
 	void setWindowParameters() {
@@ -108,7 +108,7 @@ class A10 : public BaseProject {
 					{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS, sizeof(GlobalUniformBufferObject), 1}
 				});
 
-		DSLRoom.init(this, {
+		DSLRoomFace.init(this, {
 			{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, sizeof(RoomUniformBufferObject), 1},
 			{1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 0, 1},
 			});
@@ -121,9 +121,7 @@ class A10 : public BaseProject {
 			}, {
 			  {0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(RoomVertex, pos),
 					 sizeof(glm::vec3), POSITION},
-			  {0, 1, VK_FORMAT_R32G32B32_SFLOAT, offsetof(RoomVertex, norm),
-					 sizeof(glm::vec3), NORMAL},
-			  {0, 2, VK_FORMAT_R32G32_SFLOAT, offsetof(RoomVertex, UV),
+			  {0, 1, VK_FORMAT_R32G32_SFLOAT, offsetof(RoomVertex, UV),
 					 sizeof(glm::vec2), UV}
 			});
 
@@ -131,10 +129,14 @@ class A10 : public BaseProject {
 // **A10** Place here the initialization for the VertexDescriptor
 
 		// Pipelines [Shader couples]
-		PRoom.init(this, &VDRoom, "shaders/SkyBoxVert.spv", "shaders/SkyBoxFrag.spv", { &DSLGlobal,&DSLRoom});
-		PRoom.setAdvancedFeatures(VK_COMPARE_OP_LESS_OR_EQUAL, VK_POLYGON_MODE_FILL,
- 								    VK_CULL_MODE_BACK_BIT, false);
-
+		PRoomFrontFace.init(this, &VDRoom, "shaders/SkyBoxVert.spv", "shaders/SkyBoxFrag.spv", {&DSLRoomFace });
+		PRoomRightFace.init(this, &VDRoom, "shaders/SkyBoxVert.spv", "shaders/SkyBoxFrag.spv", { &DSLRoomFace });
+		PRoomLeftFace.init(this, &VDRoom, "shaders/SkyBoxVert.spv", "shaders/SkyBoxFrag.spv", { &DSLRoomFace });
+		PRoomBottomFace.init(this, &VDRoom, "shaders/SkyBoxVert.spv", "shaders/SkyBoxFrag.spv", { &DSLRoomFace });
+		//Msun.init(this, &VDEmit, "models/Sphere.obj", OBJ);
+		//Tsun.init(this, "textures/2k_sun.jpg");
+		//PRoom.setAdvancedFeatures(VK_COMPARE_OP_LESS_OR_EQUAL, VK_POLYGON_MODE_FILL,
+ 								   // VK_CULL_MODE_BACK_BIT, false);
 
 		// Create models
 
@@ -145,14 +147,15 @@ class A10 : public BaseProject {
 		// Create the textures
 
 		Troom.init(this, "textures/Textures_Forniture.png");
+		
 
 		// Descriptor pool sizes
 		// WARNING!!!!!!!!
 		// Must be set before initializing the text and the scene
 // **A10** Update the number of elements to correctly size the descriptor sets pool
-		DPSZs.uniformBlocksInPool = 5;
-		DPSZs.texturesInPool = 4;
-		DPSZs.setsInPool = 4;
+		DPSZs.uniformBlocksInPool = 50;
+		DPSZs.texturesInPool = 40;
+		DPSZs.setsInPool = 40;
 
 std::cout << "Initializing text\n";
 		txt.init(this, &outText);
@@ -162,21 +165,27 @@ std::cout << "Initializing text\n";
 		std::cout << "Textures in the Pool        : " << DPSZs.texturesInPool << "\n";
 		std::cout << "Descriptor Sets in the Pool : " << DPSZs.setsInPool << "\n";
 		
-		ViewMatrix = glm::translate(glm::mat4(1), -CamPos);
+		//ViewMatrix = glm::translate(glm::mat4(1), -CamPos);
 	}
 	
 	// Here you create your pipelines and Descriptor Sets!
 	void pipelinesAndDescriptorSetsInit() {
 		// This creates a new pipeline (with the current surface), using its shaders
 
-		PRoom.create();
-
-
-		DSRoom.init(this, &DSLRoom, {&Troom});
+		PRoomFrontFace.create();
+		PRoomRightFace.create();
+		PRoomLeftFace.create();
+		PRoomBottomFace.create();
+		DSRoomRightFace.init(this, &DSLRoomFace, { &Troom });
+		DSRoomFrontFace.init(this, &DSLRoomFace, {&Troom });
+		DSRoomLeftFace.init(this, &DSLRoomFace, {&Troom });
+		DSRoomBottomFace.init(this, &DSLRoomFace, {&Troom });
+	
 // **A10** Add the descriptor set creation
 // Textures should be passed in the diffuse, specular, normal map, emission and clouds order.
 			
-		DSGlobal.init(this, &DSLGlobal, {});
+		DSGlobalFrontFace.init(this, &DSLGlobal, {});
+		
 
 		txt.pipelinesAndDescriptorSetsInit();		
 	}
@@ -186,11 +195,17 @@ std::cout << "Initializing text\n";
 	void pipelinesAndDescriptorSetsCleanup() {
 		// Cleanup pipelines
 
-		PRoom.cleanup();
+		PRoomFrontFace.cleanup();
+		PRoomRightFace.cleanup();
+		PRoomLeftFace.cleanup();
+		PRoomBottomFace.cleanup();
+		DSRoomRightFace.cleanup();
+		DSRoomLeftFace.cleanup();
+		DSRoomFrontFace.cleanup();
 
 
-		DSGlobal.cleanup();
-		DSRoom.cleanup();
+		DSGlobalFrontFace.cleanup();
+		
 
 
 		txt.pipelinesAndDescriptorSetsCleanup();
@@ -203,22 +218,33 @@ std::cout << "Initializing text\n";
 	void localCleanup() {	
 
 		Troom.cleanup();
+		//Troom.cleanup();
 		MroomFace.cleanup();
+		//Tsun.cleanup();
+		//Msun.cleanup();
+
 
 		
 		
 		// Cleanup descriptor set layouts
 
-		DSLGlobal.cleanup();
-		DSLRoom.cleanup();
+		DSGlobalFrontFace.cleanup();
+		DSLRoomFace.cleanup();
+		//DSLRoomFace.cleanup();
+	
 
 		
 		// Destroies the pipelines
-		PRoom.destroy();
+		PRoomFrontFace.destroy();
+		PRoomRightFace.destroy();
+		PRoomLeftFace.destroy();
+		PRoomBottomFace.destroy();
 
 		txt.localCleanup();		
 	}
-	
+	glm::mat4 initialTranslation() {
+		return glm::translate(glm::mat4(1), glm::vec3(0, -5, -15));
+	}
 	// Here it is the creation of the command buffer:
 	// You send to the GPU all the objects you want to draw,
 	// with their buffers and textures
@@ -226,20 +252,52 @@ std::cout << "Initializing text\n";
 	void populateCommandBuffer(VkCommandBuffer commandBuffer, int currentImage) {
 		// binds the pipeline
 
-		PRoom.bind(commandBuffer);
+		PRoomFrontFace.bind(commandBuffer);
+		
+
 		
 		// The models (both index and vertex buffers)
 
 		MroomFace.bind(commandBuffer);
 		
+		
 		// The descriptor sets, for each descriptor set specified in the pipeline
-		DSGlobal.bind(commandBuffer, PRoom, 0, currentImage);	// The Global Descriptor Set (Set 0)
+		//DSGlobalFrontFace.bind(commandBuffer, PRoomFrontFace, 0, currentImage);	// The Global Descriptor Set (Set 0)
+		
 
-		DSRoom.bind(commandBuffer, PRoom, 1, currentImage);	// The Room Descriptor Set (Set 1)
+		DSRoomFrontFace.bind(commandBuffer, PRoomFrontFace, 0, currentImage);	// The Room Descriptor Set (Set 1)
+		
 					
 		// The actual draw call.
 		vkCmdDrawIndexed(commandBuffer,
-				static_cast<uint32_t>(MroomFace.indices.size()), NSHIP, 0, 0, 0);	
+				static_cast<uint32_t>(MroomFace.indices.size()), 1, 0, 0, 0);	
+
+		// binds the pipeline
+		PRoomRightFace.bind(commandBuffer);
+
+		// The models (both index and vertex buffers)
+		//Msun.bind(commandBuffer);
+
+		// The descriptor sets, for each descriptor set specified in the pipeline
+		DSRoomRightFace.bind(commandBuffer, PRoomRightFace, 0, currentImage);
+
+		// The actual draw call.
+		vkCmdDrawIndexed(commandBuffer,
+			static_cast<uint32_t>(MroomFace.indices.size()), 1, 0, 0, 0);
+
+		PRoomLeftFace.bind(commandBuffer);
+		DSRoomLeftFace.bind(commandBuffer, PRoomRightFace, 0, currentImage);
+
+		// The actual draw call.
+		vkCmdDrawIndexed(commandBuffer,
+			static_cast<uint32_t>(MroomFace.indices.size()), 1, 0, 0, 0);
+
+		PRoomBottomFace.bind(commandBuffer);
+		DSRoomBottomFace.bind(commandBuffer, PRoomRightFace, 0, currentImage);
+
+		// The actual draw call.
+		vkCmdDrawIndexed(commandBuffer,
+			static_cast<uint32_t>(MroomFace.indices.size()), 1, 0, 0, 0);
 
 
 		txt.populateCommandBuffer(commandBuffer, currentImage, currScene);
@@ -255,231 +313,178 @@ std::cout << "Initializing text\n";
 		glm::vec3 m = glm::vec3(0.0f), r = glm::vec3(0.0f);
 		bool fire = false;
 		getSixAxis(deltaT, m, r, fire);
-		
+
 		static float autoTime = true;
 		static float cTime = 0.0;
-		const float turnTime = 72.0f;
+		const float turnTime = 36.0f;
 		const float angTurnTimeFact = 2.0f * M_PI / turnTime;
-		
-		if(autoTime) {
+
+		if (autoTime) {
 			cTime = cTime + deltaT;
 			cTime = (cTime > turnTime) ? (cTime - turnTime) : cTime;
 		}
+		cTime += r.z * angTurnTimeFact * 4.0;
 
-		static float tTime = 0.0;
-		const float TturnTime = 60.0f;
-		const float TangTurnTimeFact = 1.0f / TturnTime;
-		
-		if(autoTime) {
-			tTime = tTime + deltaT;
-			tTime = (tTime > TturnTime) ? (tTime - TturnTime) : tTime;
-		}
-		
 		const float ROT_SPEED = glm::radians(120.0f);
 		const float MOVE_SPEED = 2.0f;
-		
-		static float ShowCloud = 1.0f;
-		static float ShowTexture = 1.0f;
-		
-		// The Fly model update proc.
-		ViewMatrix = glm::rotate(glm::mat4(1), ROT_SPEED * r.x * deltaT,
-								 glm::vec3(1, 0, 0)) * ViewMatrix;
-		ViewMatrix = glm::rotate(glm::mat4(1), ROT_SPEED * r.y * deltaT,
-								 glm::vec3(0, 1, 0)) * ViewMatrix;
-		ViewMatrix = glm::rotate(glm::mat4(1), -ROT_SPEED * r.z * deltaT,
-								 glm::vec3(0, 0, 1)) * ViewMatrix;
-		ViewMatrix = glm::translate(glm::mat4(1), -glm::vec3(
-								   MOVE_SPEED * m.x * deltaT, MOVE_SPEED * m.y * deltaT, MOVE_SPEED * m.z * deltaT))
-													   * ViewMatrix;
+
+		CamAlpha = CamAlpha - ROT_SPEED * deltaT * r.y;
+		CamBeta = CamBeta - ROT_SPEED * deltaT * r.x;
+		CamBeta = CamBeta < glm::radians(-90.0f) ? glm::radians(-90.0f) :
+			(CamBeta > glm::radians(90.0f) ? glm::radians(90.0f) : CamBeta);
+
+		glm::vec3 ux = glm::rotate(glm::mat4(1.0f), CamAlpha, glm::vec3(0, 1, 0)) * glm::vec4(1, 0, 0, 1);
+		glm::vec3 uz = glm::rotate(glm::mat4(1.0f), CamAlpha, glm::vec3(0, 1, 0)) * glm::vec4(0, 0, 1, 1);
+		CamPos = CamPos + MOVE_SPEED * m.x * ux * deltaT;
+		CamPos = CamPos + MOVE_SPEED * m.y * glm::vec3(0, 1, 0) * deltaT;
+		CamPos = CamPos + MOVE_SPEED * m.z * uz * deltaT;
+
 		static float subpassTimer = 0.0;
 
-		if(glfwGetKey(window, GLFW_KEY_SPACE)) {
-			if(!debounce) {
+		if (glfwGetKey(window, GLFW_KEY_SPACE)) {
+			if (!debounce) {
 				debounce = true;
 				curDebounce = GLFW_KEY_SPACE;
-				if(currScene != 1) {
-					currScene = (currScene+1) % outText.size();
+				if (currScene != 1) {
+					currScene = (currScene + 1) % outText.size();
 
 				}
-				if(currScene == 1) {
-					if(subpass >= 4) {
+				if (currScene == 1) {
+					if (subpass >= 4) {
 						currScene = 0;
 					}
 				}
 				std::cout << "Scene : " << currScene << "\n";
-				
+
 				RebuildPipeline();
 			}
-		} else {
-			if((curDebounce == GLFW_KEY_SPACE) && debounce) {
+		}
+		else {
+			if ((curDebounce == GLFW_KEY_SPACE) && debounce) {
 				debounce = false;
 				curDebounce = 0;
 			}
 		}
 
 		// Standard procedure to quit when the ESC key is pressed
-		if(glfwGetKey(window, GLFW_KEY_ESCAPE)) {
+		if (glfwGetKey(window, GLFW_KEY_ESCAPE)) {
 			glfwSetWindowShouldClose(window, GL_TRUE);
 		}
 
 
-		if(glfwGetKey(window, GLFW_KEY_V)) {
-			if(!debounce) {
+		if (glfwGetKey(window, GLFW_KEY_V)) {
+			if (!debounce) {
 				debounce = true;
 				curDebounce = GLFW_KEY_V;
 
-				printMat4("ViewMatrix  ", ViewMatrix);				
-				std::cout << "cTime    = " << cTime    << ";\n";
-				std::cout << "tTime    = " << tTime    << ";\n";
-				std::cout << "ShowCloud    = " << ShowCloud    << ";\n";
-				std::cout << "ShowTexture    = " << ShowTexture    << ";\n";
+				printVec3("CamPos  ", CamPos);
+				std::cout << "CamAlpha = " << CamAlpha << ";\n";
+				std::cout << "CamBeta  = " << CamBeta << ";\n";
+				std::cout << "cTime    = " << cTime << ";\n";
 			}
-		} else {
-			if((curDebounce == GLFW_KEY_V) && debounce) {
+		}
+		else {
+			if ((curDebounce == GLFW_KEY_V) && debounce) {
 				debounce = false;
 				curDebounce = 0;
 			}
 		}
 
-		if(glfwGetKey(window, GLFW_KEY_C)) {
-			if(!debounce) {
-				debounce = true;
-				curDebounce = GLFW_KEY_C;
-				
-				ShowCloud = 1.0f - ShowCloud;
-			}
-		} else {
-			if((curDebounce == GLFW_KEY_C) && debounce) {
-				debounce = false;
-				curDebounce = 0;
-			}
-		}
 
-		if(glfwGetKey(window, GLFW_KEY_T)) {
-			if(!debounce) {
-				debounce = true;
-				curDebounce = GLFW_KEY_T;
-				
-				ShowTexture = 1.0f - ShowTexture;
-			}
-		} else {
-			if((curDebounce == GLFW_KEY_T) && debounce) {
-				debounce = false;
-				curDebounce = 0;
-			}
-		}
-
-	
-		if(currScene == 1) {
-			switch(subpass) {
-			  case 0:
-ViewMatrix   = glm::mat4(-0.0656882, -0.162777, 0.984474, 0, 0.0535786, 0.984606, 0.166374, 0, -0.996401, 0.0636756, -0.0559558, 0, 0.0649244, -0.531504, -3.26128, 1);
-cTime    = 22.3604;
-tTime    = 22.3604;
-ShowCloud    = 1;
-ShowTexture    = 1;
-autoTime = false;
-				break;
-			  case 1:
-ViewMatrix   = glm::mat4(-0.312507, -0.442291, 0.840666, 0, 0.107287, 0.862893, 0.493868, 0, -0.943837, 0.24453, -0.222207, 0, -0.0157694, -0.186147, -1.54649, 1);
-cTime    = 38.9919;
-tTime    = 38.9919;
-ShowCloud    = 0;
-ShowTexture    = 1;
-				break;
-			  case 2:
-ViewMatrix   = glm::mat4(-0.992288, 0.00260993, -0.12393, 0, -0.0396232, 0.940648, 0.337063, 0, 0.117454, 0.339374, -0.93329, 0, 0.0335061, -0.0115242, -2.99662, 1);
-cTime    = 71.0587;
-tTime    = 11.0587;
-ShowCloud    = 1;
-ShowTexture    = 1;
-				break;
-			  case 3:
-ViewMatrix   = glm::mat4(0.0942192, -0.242781, 0.965495, 0, 0.560756, 0.814274, 0.150033, 0, -0.822603, 0.527272, 0.212861, 0, -0.567191, -0.254532, -1.79143, 1);
-cTime    = 55.9355;
-tTime    = 7.93549;
-ShowCloud    = 1;
-ShowTexture    = 0;
-				break;
-			}
-		}
-		
-		if(currScene == 1) {
-			subpassTimer += deltaT;
-			if(subpassTimer > 4.0f) {
-				subpassTimer = 0.0f;
-				subpass++;
-				std::cout << "Scene : " << currScene << " subpass: " << subpass << "\n";
-				char buf[20];
-				sprintf(buf, "A10_%d.png", subpass);
-				saveScreenshot(buf, currentImage);
-				if(subpass == 4) {
-					ViewMatrix = glm::translate(glm::mat4(1), -CamPos);
-					cTime    = 0;
-					tTime    = 0;
-					ShowCloud    = 1;
-					ShowTexture    = 1;
-					autoTime = true;
-					
-					
-					currScene = 0;
-					std::cout << "Scene : " << currScene << "\n";
-					RebuildPipeline();
+		/*		if(currScene == 1) {
+					switch(subpass) {
+					  case 0:
+		CamPos   = glm::vec3(0.0644703, 6.442, 8.83251);
+		CamAlpha = 0;
+		CamBeta  = -0.4165;
+		cTime    = 2.40939;
+		autoTime = false;
+						break;
+					  case 1:
+		CamPos   = glm::vec3(-1.21796, 6.82323, 5.58497);
+		CamAlpha = 0.284362;
+		CamBeta  = -0.58455;
+		cTime    = 23.3533;
+						break;
+					  case 2:
+		CamPos   = glm::vec3(0.921455, 3.97743, 0.855181);
+		CamAlpha = -1.16426;
+		CamBeta  = -0.388393;
+		cTime    = 36.6178;
+						break;
+					  case 3:
+		 CamPos   = glm::vec3(5.59839, 4.04786, 2.59767);
+		CamAlpha = 1.01073;
+		CamBeta  = -0.213902;
+		cTime    = 15.6739;
+						break;
+					}
 				}
-			}
-		}
+
+				if(currScene == 1) {
+					subpassTimer += deltaT;
+					if(subpassTimer > 4.0f) {
+						subpassTimer = 0.0f;
+						subpass++;
+						std::cout << "Scene : " << currScene << " subpass: " << subpass << "\n";
+						char buf[20];
+						sprintf(buf, "A08_%d.png", subpass);
+						saveScreenshot(buf, currentImage);
+						if(subpass == 4) {
+		CamPos   = glm::vec3(0, 1.5, 7);
+		CamAlpha = 0;
+		CamBeta  = 0;
+		autoTime = true;
+							currScene = 0;
+							std::cout << "Scene : " << currScene << "\n";
+							RebuildPipeline();
+						}
+					}
+				}*/
 
 
-		// Here is where you actually update your uniforms
-		glm::mat4 M = glm::perspective(glm::radians(45.0f), Ar, 0.1f, 160.0f);
+				// Here is where you actually update your uniforms
+		glm::mat4 M = glm::perspective(glm::radians(45.0f), Ar, 0.1f, 50.0f);
 		M[1][1] *= -1;
 
-		glm::mat4 Mv = ViewMatrix;
+		glm::mat4 Mv = glm::rotate(glm::mat4(1.0), -CamBeta, glm::vec3(1, 0, 0)) *
+			glm::rotate(glm::mat4(1.0), -CamAlpha, glm::vec3(0, 1, 0)) *
+			glm::translate(glm::mat4(1.0), -CamPos);
 
-		glm::mat4 ViewPrj =  M * Mv;
-		glm::mat4 baseTr = glm::mat4(1.0f);								
+		glm::mat4 ViewPrj = M * Mv;
+		glm::mat4 baseTr = glm::mat4(1.0f);
 
 		// updates global uniforms
 		// Global
 		GlobalUniformBufferObject gubo{};
 		gubo.lightDir = glm::vec3(cos(glm::radians(135.0f)) * cos(cTime * angTurnTimeFact), sin(glm::radians(135.0f)), cos(glm::radians(135.0f)) * sin(cTime * angTurnTimeFact));
 		gubo.lightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-		gubo.eyePos = glm::vec3(glm::inverse(ViewMatrix) * glm::vec4(0, 0, 0, 1));
-		DSGlobal.map(currentImage, &gubo, 0);
+		gubo.eyePos = CamPos;
+		DSGlobalFrontFace.map(currentImage, &gubo, 0);
+		//DSGlobalRigthFace.map(currentImage, &gubo, 0);
 
 		// objects
-		RoomUniformBufferObject roomUbo{};
 
-		roomUbo.mvpMat = ViewPrj;
+		RoomUniformBufferObject roomFrontFaceUbo{};
+		roomFrontFaceUbo.mvpMat = ViewPrj * glm::translate(glm::mat4(1),glm::vec3(0,0,-4))* initialTranslation() * glm::scale(glm::mat4(1), glm::vec3(3, 1, 1)) * baseTr;
+		//roomRightFaceUbo.mvpMat = ViewPrj * glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0, 1, 0)) * baseTr;
+		//DSRoomRightFace.map(currentImage, &roomRightFaceUbo, 0);
+		DSRoomFrontFace.map(currentImage, &roomFrontFaceUbo, 0);
 
-
-		DSRoom.map(currentImage, &roomUbo, 0);
-
+		RoomUniformBufferObject roomRightFaceUbo{};
+		roomRightFaceUbo.mvpMat = ViewPrj *glm::translate(glm::mat4(1),glm::vec3(6,0,2))*initialTranslation()* glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0, 1, 0)) * glm::scale(glm::mat4(1), glm::vec3(3, 1, 1))* baseTr;
 		
-// **A10** Add to compute the uniforms and pass them to the shaders. You need two uniforms: one for the matrices, and the other for the material parameters.
+		DSRoomRightFace.map(currentImage, &roomRightFaceUbo, 0);
 
-		// World and normal matrix should be the identiy. The World-View-Projection should be variable ViewPrj
+		RoomUniformBufferObject roomLeftFaceUbo{};
+		roomLeftFaceUbo.mvpMat = ViewPrj * glm::translate(glm::mat4(1), glm::vec3(-6, 0, 2))*initialTranslation() * glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(0, 1, 0)) * glm::scale(glm::mat4(1), glm::vec3(3, 1, 1)) * baseTr;
 
-		// These informations should be used to fill the Uniform Buffer Object in Binding 0 of your DSL
+		DSRoomLeftFace.map(currentImage, &roomLeftFaceUbo, 0);
 
+		RoomUniformBufferObject roomBottomFaceUbo{};
+		roomBottomFaceUbo.mvpMat = ViewPrj * glm::translate(glm::mat4(1), glm::vec3(0, 0, -4)) *initialTranslation()* glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1, 0, 0)) * glm::scale(glm::mat4(1), glm::vec3(3, 3, 1)) * baseTr;
 
-		// The specular power of the uniform buffer containing the material parameters of the new object should be set to:
-		// XXX.Power = 200.0
-		// Where you replace XXX.Power with the field of the local variable corresponding to the uniform buffer object
-
-		// The textre angle parameter of the uniform buffer containing the material parameters of the new object shoud be set to: tTime * TangTurnTimeFact
-		// XXX.Ang = tTime * TangTurnTimeFact;
-		// Where you replace XXX.Ang with the local field of the variable corresponding to the uniform buffer object
-
-		// The selector for showing the clouds of the uniform buffer containing the material parameters of the new object should be set to:
-		// XXX.ShowCloud = ShowCloud
-		// Where you replace XXX.ShowCloud with the local field of the variable corresponding to the uniform buffer object
-
-		// The selector for showing the clouds of the uniform buffer containing the material parameters of the new object should be set to:
-		// XXX.ShowTexture = ShowTexture
-		// Where you replace XXX.ShowTexture with the local field of the variable corresponding to the uniform buffer object
-
-		// These informations should be used to fill the Uniform Buffer Object in Binding 6 of your DSL
+		DSRoomBottomFace.map(currentImage, &roomBottomFaceUbo, 0);
 	}
 };
 
