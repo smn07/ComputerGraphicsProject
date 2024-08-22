@@ -1160,6 +1160,12 @@
     <None Include="shaders\SkyBoxShader.vert" />
     <None Include="shaders\TextShader.frag" />
     <None Include="shaders\TextShader.vert" />
+    <None Include="shaders\bottomFaceShader.frag" />
+    <None Include="shaders\facesRoomShader.vert" />
+    <None Include="shaders\leftRightFaceShader.frag" />
+    <None Include="shaders\facesRoomVert.spv" />
+    <None Include="shaders\frontFaceShader.frag" />
+    <None Include="shaders\armChairShader.frag" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="headers\glm\detail\glm.cpp">

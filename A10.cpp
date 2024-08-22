@@ -14,7 +14,7 @@ std::vector<SingleText> outText = {
 
 
 // The uniform buffer object used in this example
-#define NSHIP 16
+//#define NSHIP 16
 
 
 struct GlobalUniformBufferObject {
@@ -29,12 +29,31 @@ struct RoomUniformBufferObject {
 	alignas(16) glm::mat4 mvpMat;
 };
 
+//for the armchair
+struct armchairUniformBufferObject {
+	alignas(16) glm::mat4 mvpMat;
+};
 
+//for the bed
+struct bedUniformBufferObject {
+	alignas(16) glm::mat4 mvpMat;
+};
 
 
 // The vertices data structures
-
 struct RoomVertex {
+	glm::vec3 pos;
+	glm::vec2 UV;
+};
+
+//armchair vertex
+struct armchairVertex {
+	glm::vec3 pos;
+	glm::vec2 UV;
+};
+
+//bed vertex
+struct bedVertex {
 	glm::vec3 pos;
 	glm::vec2 UV;
 };
@@ -51,25 +70,41 @@ class A10 : public BaseProject {
 
 	DescriptorSetLayout DSLRoomFace;	// For Room
 
+	DescriptorSetLayout DSLArmchair;	// For Armchair
+
+	DescriptorSetLayout DSLBed;	// For Bed
+
 
 	// vertex descriptor for the room
 	VertexDescriptor VDRoom;
 
+	// Vertex descriptor for the armchair
+	VertexDescriptor VDArmchair;
+
+	// Vertex descriptor for the bed
+	VertexDescriptor VDBed;
+
 	// Pipelines [Shader couples]
 
-	Pipeline PRoomFrontFace,PRoomRightFace,PRoomLeftFace,PRoomBottomFace;
+	Pipeline PRoomFrontFace,PRoomRightFace,PRoomLeftFace,PRoomBottomFace,PArmChair,Pbed;
 
 	// Scenes and texts
     TextMaker txt;
 
 	// Models, textures and Descriptor Sets (values assigned to the uniforms)
-	DescriptorSet DSGlobalFrontFace, DSGlobalRigthFace;
+	DescriptorSet DSGlobalFrontFace, DSGlobalRigthFace, DSGlobalArmchair, DSGlobalBed;
 
-	Model MroomFace;
+	Model MroomFace, bottomFace;
 	Texture Troom;
 	DescriptorSet DSRoomFrontFace, DSRoomRightFace, DSRoomLeftFace, DSRoomBottomFace;
 
-// **A10** Place here the variables for the Model, the five texture (diffuse, specular, normal map, emission and clouds) and the Descrptor Set
+	Model Marmchair;
+	//we can use the same texture used for the room
+	DescriptorSet DSArmchair;
+
+	Model Mbed;
+	//we can use the same texture used for the room
+	DescriptorSet DSBed;
 
 	
 // Other application parameters
@@ -89,7 +124,7 @@ class A10 : public BaseProject {
 		windowHeight = 600;
 		windowTitle = "project";
     	windowResizable = GLFW_TRUE;
-		initialBackgroundColor = {0.1f, 0.1f, 0.1f, 1.0f};
+		initialBackgroundColor = { 0.0f, 0.0f, 0.0f, 1.0f };
 		
 		Ar = (float)windowWidth / (float)windowHeight;
 	}
@@ -113,6 +148,16 @@ class A10 : public BaseProject {
 			{1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 0, 1},
 			});
 
+		DSLArmchair.init(this, {
+			{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, sizeof(armchairUniformBufferObject), 1},
+			{1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 0, 1},
+			});
+
+		DSLBed.init(this, {
+			{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, sizeof(bedUniformBufferObject), 1},
+			{1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 0, 1},
+			});
+
 
 		// Vertex descriptors
 
@@ -125,26 +170,42 @@ class A10 : public BaseProject {
 					 sizeof(glm::vec2), UV}
 			});
 
+		VDArmchair.init(this, {
+		  {0, sizeof(armchairVertex), VK_VERTEX_INPUT_RATE_VERTEX}
+			}, {
+			  {0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(armchairVertex, pos),
+									 sizeof(glm::vec3), POSITION},
+			  {0, 1, VK_FORMAT_R32G32_SFLOAT, offsetof(armchairVertex, UV),
+								 sizeof(glm::vec2), UV}
+			});
 
-// **A10** Place here the initialization for the VertexDescriptor
+		VDBed.init(this, {
+		  {0, sizeof(bedVertex), VK_VERTEX_INPUT_RATE_VERTEX}
+			}, {
+			  {0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(bedVertex, pos),
+													 sizeof(glm::vec3), POSITION},
+			  {0, 1, VK_FORMAT_R32G32_SFLOAT, offsetof(bedVertex, UV),
+											 sizeof(glm::vec2), UV}
+			});
+
+
 
 		// Pipelines [Shader couples]
-		PRoomFrontFace.init(this, &VDRoom, "shaders/SkyBoxVert.spv", "shaders/SkyBoxFrag.spv", {&DSLRoomFace });
-		PRoomRightFace.init(this, &VDRoom, "shaders/SkyBoxVert.spv", "shaders/SkyBoxFrag.spv", { &DSLRoomFace });
-		PRoomLeftFace.init(this, &VDRoom, "shaders/SkyBoxVert.spv", "shaders/SkyBoxFrag.spv", { &DSLRoomFace });
-		PRoomBottomFace.init(this, &VDRoom, "shaders/SkyBoxVert.spv", "shaders/SkyBoxFrag.spv", { &DSLRoomFace });
-		//Msun.init(this, &VDEmit, "models/Sphere.obj", OBJ);
-		//Tsun.init(this, "textures/2k_sun.jpg");
-		//PRoom.setAdvancedFeatures(VK_COMPARE_OP_LESS_OR_EQUAL, VK_POLYGON_MODE_FILL,
- 								   // VK_CULL_MODE_BACK_BIT, false);
+		PRoomFrontFace.init(this, &VDRoom, "shaders/facesRoomVert.spv", "shaders/frontFaceFrag.spv", {&DSLRoomFace });
+		PRoomRightFace.init(this, &VDRoom, "shaders/facesRoomVert.spv", "shaders/leftRightFacesFrag.spv", { &DSLRoomFace });
+		PRoomLeftFace.init(this, &VDRoom, "shaders/facesRoomVert.spv", "shaders/leftRightFacesFrag.spv", { &DSLRoomFace });
+		PRoomBottomFace.init(this, &VDRoom, "shaders/facesRoomVert.spv", "shaders/bottomFrag.spv", { &DSLRoomFace });
+		PArmChair.init(this, &VDArmchair, "shaders/armchairVert.spv", "shaders/armchairFrag.spv", { &DSLArmchair });
+		Pbed.init(this, &VDBed, "shaders/bedVert.spv", "shaders/bedFrag.spv", { &DSLBed });
 
 		// Create models
 
-		MroomFace.init(this, &VDRoom, "models/Walls_010_Plane.004.mgcg", MGCG);
-// **A10** Place here the loading of the model. It should be contained in file "models/Sphere.gltf", it should use the
-//		Vertex descriptor you defined, and be of GLTF format.
+		MroomFace.init(this, &VDRoom, "models/Walls_009_Plane.003.mgcg", MGCG);
+		bottomFace.init(this, &VDRoom, "models/floor_016_Mesh.338.mgcg", MGCG);
+		Marmchair.init(this, &VDArmchair, "models/armchair_001_Mesh.085.mgcg", MGCG);
+		Mbed.init(this, &VDBed, "models/bed_007_Mesh.6450.mgcg", MGCG);
 		
-		// Create the textures
+		// Create the textures used also for the internal objects
 
 		Troom.init(this, "textures/Textures_Forniture.png");
 		
@@ -152,7 +213,6 @@ class A10 : public BaseProject {
 		// Descriptor pool sizes
 		// WARNING!!!!!!!!
 		// Must be set before initializing the text and the scene
-// **A10** Update the number of elements to correctly size the descriptor sets pool
 		DPSZs.uniformBlocksInPool = 50;
 		DPSZs.texturesInPool = 40;
 		DPSZs.setsInPool = 40;
@@ -176,15 +236,19 @@ std::cout << "Initializing text\n";
 		PRoomRightFace.create();
 		PRoomLeftFace.create();
 		PRoomBottomFace.create();
+		PArmChair.create();
+		Pbed.create();
 		DSRoomRightFace.init(this, &DSLRoomFace, { &Troom });
 		DSRoomFrontFace.init(this, &DSLRoomFace, {&Troom });
 		DSRoomLeftFace.init(this, &DSLRoomFace, {&Troom });
 		DSRoomBottomFace.init(this, &DSLRoomFace, {&Troom });
+		DSArmchair.init(this, &DSLArmchair, {&Troom});
+		DSBed.init(this, &DSLBed, {&Troom});
 	
-// **A10** Add the descriptor set creation
-// Textures should be passed in the diffuse, specular, normal map, emission and clouds order.
 			
 		DSGlobalFrontFace.init(this, &DSLGlobal, {});
+		//DSGlobalRigthFace.init(this, &DSLGlobal, {});
+		//DSGlobalArmchair.init(this, &DSLGlobal, {});
 		
 
 		txt.pipelinesAndDescriptorSetsInit();		
@@ -199,9 +263,15 @@ std::cout << "Initializing text\n";
 		PRoomRightFace.cleanup();
 		PRoomLeftFace.cleanup();
 		PRoomBottomFace.cleanup();
+		PArmChair.cleanup();
+		Pbed.cleanup();
+
 		DSRoomRightFace.cleanup();
 		DSRoomLeftFace.cleanup();
 		DSRoomFrontFace.cleanup();
+		DSRoomBottomFace.cleanup();
+		DSArmchair.cleanup();
+		DSBed.cleanup();
 
 
 		DSGlobalFrontFace.cleanup();
@@ -218,18 +288,18 @@ std::cout << "Initializing text\n";
 	void localCleanup() {	
 
 		Troom.cleanup();
-		//Troom.cleanup();
 		MroomFace.cleanup();
-		//Tsun.cleanup();
-		//Msun.cleanup();
+		bottomFace.cleanup();
+		Marmchair.cleanup();
+		Mbed.cleanup();
 
-
-		
 		
 		// Cleanup descriptor set layouts
 
 		DSGlobalFrontFace.cleanup();
 		DSLRoomFace.cleanup();
+		DSLArmchair.cleanup();
+		DSLBed.cleanup();
 		//DSLRoomFace.cleanup();
 	
 
@@ -239,6 +309,8 @@ std::cout << "Initializing text\n";
 		PRoomRightFace.destroy();
 		PRoomLeftFace.destroy();
 		PRoomBottomFace.destroy();
+		PArmChair.destroy();
+		Pbed.destroy();
 
 		txt.localCleanup();		
 	}
@@ -254,12 +326,10 @@ std::cout << "Initializing text\n";
 
 		PRoomFrontFace.bind(commandBuffer);
 		
-
-		
 		// The models (both index and vertex buffers)
 
 		MroomFace.bind(commandBuffer);
-		
+		//bottomFace.bind(commandBuffer);
 		
 		// The descriptor sets, for each descriptor set specified in the pipeline
 		//DSGlobalFrontFace.bind(commandBuffer, PRoomFrontFace, 0, currentImage);	// The Global Descriptor Set (Set 0)
@@ -286,21 +356,39 @@ std::cout << "Initializing text\n";
 			static_cast<uint32_t>(MroomFace.indices.size()), 1, 0, 0, 0);
 
 		PRoomLeftFace.bind(commandBuffer);
-		DSRoomLeftFace.bind(commandBuffer, PRoomRightFace, 0, currentImage);
+		DSRoomLeftFace.bind(commandBuffer, PRoomLeftFace, 0, currentImage);
 
 		// The actual draw call.
 		vkCmdDrawIndexed(commandBuffer,
 			static_cast<uint32_t>(MroomFace.indices.size()), 1, 0, 0, 0);
+
+
+		//l'idea è di fare il binding del modello sempre a ridosso del binding della pipeline.
+		bottomFace.bind(commandBuffer);
 
 		PRoomBottomFace.bind(commandBuffer);
-		DSRoomBottomFace.bind(commandBuffer, PRoomRightFace, 0, currentImage);
+		DSRoomBottomFace.bind(commandBuffer, PRoomBottomFace, 0, currentImage);
 
 		// The actual draw call.
 		vkCmdDrawIndexed(commandBuffer,
-			static_cast<uint32_t>(MroomFace.indices.size()), 1, 0, 0, 0);
+			static_cast<uint32_t>(bottomFace.indices.size()), 1, 0, 0, 0);
 
 
 		txt.populateCommandBuffer(commandBuffer, currentImage, currScene);
+
+		//armchair
+		Marmchair.bind(commandBuffer);
+		PArmChair.bind(commandBuffer);
+		DSArmchair.bind(commandBuffer, PArmChair, 0, currentImage);
+		vkCmdDrawIndexed(commandBuffer,
+						static_cast<uint32_t>(Marmchair.indices.size()), 1, 0, 0, 0);
+
+		//bed
+		Mbed.bind(commandBuffer);
+		Pbed.bind(commandBuffer);
+		DSBed.bind(commandBuffer, Pbed, 0, currentImage);
+		vkCmdDrawIndexed(commandBuffer,
+						static_cast<uint32_t>(Mbed.indices.size()), 1, 0, 0, 0);
 	}
 
 	// Here is where you update the uniforms.
@@ -461,10 +549,8 @@ std::cout << "Initializing text\n";
 		gubo.lightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 		gubo.eyePos = CamPos;
 		DSGlobalFrontFace.map(currentImage, &gubo, 0);
-		//DSGlobalRigthFace.map(currentImage, &gubo, 0);
 
 		// objects
-
 		RoomUniformBufferObject roomFrontFaceUbo{};
 		roomFrontFaceUbo.mvpMat = ViewPrj * glm::translate(glm::mat4(1),glm::vec3(0,0,-4))* initialTranslation() * glm::scale(glm::mat4(1), glm::vec3(3, 1, 1)) * baseTr;
 		//roomRightFaceUbo.mvpMat = ViewPrj * glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0, 1, 0)) * baseTr;
@@ -482,9 +568,21 @@ std::cout << "Initializing text\n";
 		DSRoomLeftFace.map(currentImage, &roomLeftFaceUbo, 0);
 
 		RoomUniformBufferObject roomBottomFaceUbo{};
-		roomBottomFaceUbo.mvpMat = ViewPrj * glm::translate(glm::mat4(1), glm::vec3(0, 0, -4)) *initialTranslation()* glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1, 0, 0)) * glm::scale(glm::mat4(1), glm::vec3(3, 3, 1)) * baseTr;
+		//roomBottomFaceUbo.mvpMat = ViewPrj * glm::translate(glm::mat4(1), glm::vec3(0, 0, -4)) *initialTranslation()* glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1, 0, 0)) * glm::scale(glm::mat4(1), glm::vec3(3, 3, 1)) * baseTr;
+		roomBottomFaceUbo.mvpMat = ViewPrj * glm::translate(glm::mat4(1), glm::vec3(0, 0, +2)) * initialTranslation() * glm::scale(glm::mat4(1), glm::vec3(3, 1, 3)) * baseTr;
 
 		DSRoomBottomFace.map(currentImage, &roomBottomFaceUbo, 0);
+
+		//armchair
+		armchairUniformBufferObject armchairUbo{};
+		armchairUbo.mvpMat = ViewPrj * glm::translate(glm::mat4(1), glm::vec3(4.5, 0, 6)) * initialTranslation() * glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(0, 1, 0)) *glm::scale(glm::mat4(1), glm::vec3(1.5, 1.5, 1.5)) * baseTr;
+		DSArmchair.map(currentImage, &armchairUbo, 0);
+
+		//bed
+		bedUniformBufferObject bedUbo{};
+		bedUbo.mvpMat = ViewPrj * glm::translate(glm::mat4(1), glm::vec3(0, 0, -1.25)) * initialTranslation() * glm::scale(glm::mat4(1), glm::vec3(2.5, 2.5, 2.5)) * baseTr;
+		DSBed.map(currentImage, &bedUbo, 0);
+
 	}
 };
 

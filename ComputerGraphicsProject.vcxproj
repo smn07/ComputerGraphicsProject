@@ -516,10 +516,16 @@
     <None Include="headers\glm\gtx\vector_query.inl" />
     <None Include="headers\glm\gtx\wrap.inl" />
     <None Include="models\Sphere.gltf" />
+    <None Include="shaders\armChairShader.frag" />
     <None Include="shaders\BlinnShader.frag" />
     <None Include="shaders\BlinnShader.vert" />
+    <None Include="shaders\bottomFaceShader.frag" />
     <None Include="shaders\EmissionShader.frag" />
     <None Include="shaders\EmissionShader.vert" />
+    <None Include="shaders\facesRoomShader.vert" />
+    <None Include="shaders\facesRoomVert.spv" />
+    <None Include="shaders\frontFaceShader.frag" />
+    <None Include="shaders\leftRightFaceShader.frag" />
     <None Include="shaders\NormalMapShader.frag" />
     <None Include="shaders\NormalMapShader.vert" />
     <None Include="shaders\SkyBoxShader.frag" />
