@@ -18,25 +18,34 @@ std::vector<SingleText> outText = {
 
 
 struct GlobalUniformBufferObject {
-	alignas(16) glm::vec3 lightDir;
-	alignas(16) glm::vec4 lightColor;
+	alignas(16) glm::vec3 lightDir[5];
+	alignas(16) glm::vec3 lightPos[5];
+	alignas(16) glm::vec4 lightColor[5];
 	alignas(16) glm::vec3 eyePos;
+	alignas(16) glm::vec4 eyeDir;
+	alignas(16) glm::vec4 lightOn;
 };
 
 
 
 struct RoomUniformBufferObject {
 	alignas(16) glm::mat4 mvpMat;
+	alignas(16) glm::mat4 mMat;
+	alignas(16) glm::mat4 nMat;
 };
 
 //for the armchair
 struct armchairUniformBufferObject {
 	alignas(16) glm::mat4 mvpMat;
+	alignas(16) glm::mat4 mMat;
+	alignas(16) glm::mat4 nMat;
 };
 
 //for the bed
 struct bedUniformBufferObject {
 	alignas(16) glm::mat4 mvpMat;
+	alignas(16) glm::mat4 mMat;
+	alignas(16) glm::mat4 nMat;
 };
 
 
@@ -44,8 +53,9 @@ struct bedUniformBufferObject {
 struct RoomVertex {
 	glm::vec3 pos;
 	glm::vec2 UV;
+	glm::vec3 norm;
 };
-
+/* DA VEDERE SE USARE O MENO
 //armchair vertex
 struct armchairVertex {
 	glm::vec3 pos;
@@ -58,7 +68,7 @@ struct bedVertex {
 	glm::vec2 UV;
 };
 
-
+*/
 
 // MAIN ! 
 class A10 : public BaseProject {
@@ -70,19 +80,12 @@ class A10 : public BaseProject {
 
 	DescriptorSetLayout DSLRoomFace;	// For Room
 
-	DescriptorSetLayout DSLArmchair;	// For Armchair
-
-	DescriptorSetLayout DSLBed;	// For Bed
 
 
 	// vertex descriptor for the room
 	VertexDescriptor VDRoom;
 
 	// Vertex descriptor for the armchair
-	VertexDescriptor VDArmchair;
-
-	// Vertex descriptor for the bed
-	VertexDescriptor VDBed;
 
 	// Pipelines [Shader couples]
 
@@ -92,7 +95,7 @@ class A10 : public BaseProject {
     TextMaker txt;
 
 	// Models, textures and Descriptor Sets (values assigned to the uniforms)
-	DescriptorSet DSGlobalFrontFace, DSGlobalRigthFace, DSGlobalArmchair, DSGlobalBed;
+	DescriptorSet DSGlobal;
 
 	Model MroomFace, bottomFace;
 	Texture Troom;
@@ -112,10 +115,15 @@ class A10 : public BaseProject {
 	int subpass = 0;
 
 	glm::vec3 CamPos = glm::vec3(0.0, 1.5, 7.0);
-	float CamAlpha = 0.0f;
-	float CamBeta = 0.0f;
-	float Ar;
+	float CamAlpha = 0.0f;//cam rotation
+	float CamBeta = 0.0f;//cam rotation
+	float Ar;//screen aspect ratio
 	glm::mat4 ViewMatrix;
+	glm::mat4 LWm[5];// used to contain the light world matrix
+	glm::vec3 LCol[5];//used to contain the light color
+	float LInt[5];//used to contain the light intensity
+	float ScosIn, ScosOut;//used to contain the inner and outer cone of the spot light
+	glm::vec4 lightOn;//used to contain the light status, DA VEDERE SE RIDURLO AD UN VETTORE DI 2 PER AVERE SOLO POINT LIGHT E DIRECT
 	
 	// Here you set the main application parameters
 	void setWindowParameters() {
@@ -148,15 +156,7 @@ class A10 : public BaseProject {
 			{1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 0, 1},
 			});
 
-		DSLArmchair.init(this, {
-			{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, sizeof(armchairUniformBufferObject), 1},
-			{1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 0, 1},
-			});
-
-		DSLBed.init(this, {
-			{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, sizeof(bedUniformBufferObject), 1},
-			{1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 0, 1},
-			});
+	
 
 
 		// Vertex descriptors
@@ -167,43 +167,27 @@ class A10 : public BaseProject {
 			  {0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(RoomVertex, pos),
 					 sizeof(glm::vec3), POSITION},
 			  {0, 1, VK_FORMAT_R32G32_SFLOAT, offsetof(RoomVertex, UV),
-					 sizeof(glm::vec2), UV}
-			});
-
-		VDArmchair.init(this, {
-		  {0, sizeof(armchairVertex), VK_VERTEX_INPUT_RATE_VERTEX}
-			}, {
-			  {0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(armchairVertex, pos),
-									 sizeof(glm::vec3), POSITION},
-			  {0, 1, VK_FORMAT_R32G32_SFLOAT, offsetof(armchairVertex, UV),
-								 sizeof(glm::vec2), UV}
-			});
-
-		VDBed.init(this, {
-		  {0, sizeof(bedVertex), VK_VERTEX_INPUT_RATE_VERTEX}
-			}, {
-			  {0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(bedVertex, pos),
-													 sizeof(glm::vec3), POSITION},
-			  {0, 1, VK_FORMAT_R32G32_SFLOAT, offsetof(bedVertex, UV),
-											 sizeof(glm::vec2), UV}
+					 sizeof(glm::vec2), UV},
+			  {0, 2, VK_FORMAT_R32G32B32_SFLOAT, offsetof(RoomVertex, norm),
+					 sizeof(glm::vec3), NORMAL}
 			});
 
 
 
 		// Pipelines [Shader couples]
-		PRoomFrontFace.init(this, &VDRoom, "shaders/facesRoomVert.spv", "shaders/frontFaceFrag.spv", {&DSLRoomFace });
-		PRoomRightFace.init(this, &VDRoom, "shaders/facesRoomVert.spv", "shaders/leftRightFacesFrag.spv", { &DSLRoomFace });
-		PRoomLeftFace.init(this, &VDRoom, "shaders/facesRoomVert.spv", "shaders/leftRightFacesFrag.spv", { &DSLRoomFace });
-		PRoomBottomFace.init(this, &VDRoom, "shaders/facesRoomVert.spv", "shaders/bottomFrag.spv", { &DSLRoomFace });
-		PArmChair.init(this, &VDArmchair, "shaders/armchairVert.spv", "shaders/armchairFrag.spv", { &DSLArmchair });
-		Pbed.init(this, &VDBed, "shaders/bedVert.spv", "shaders/bedFrag.spv", { &DSLBed });
+		PRoomFrontFace.init(this, &VDRoom, "shaders/facesRoomVert.spv", "shaders/frontFaceFrag.spv", {&DSLGlobal,&DSLRoomFace });
+		PRoomRightFace.init(this, &VDRoom, "shaders/facesRoomVert.spv", "shaders/leftRightFacesFrag.spv", { &DSLGlobal,&DSLRoomFace });
+		PRoomLeftFace.init(this, &VDRoom, "shaders/facesRoomVert.spv", "shaders/leftRightFacesFrag.spv", { &DSLGlobal,&DSLRoomFace });
+		PRoomBottomFace.init(this, &VDRoom, "shaders/facesRoomVert.spv", "shaders/bottomFrag.spv", { &DSLGlobal,&DSLRoomFace });
+		PArmChair.init(this, &VDRoom, "shaders/armchairVert.spv", "shaders/armchairFrag.spv", { &DSLGlobal,&DSLRoomFace });
+		Pbed.init(this, &VDRoom, "shaders/bedVert.spv", "shaders/bedFrag.spv", { &DSLGlobal,&DSLRoomFace });
 
 		// Create models
 
 		MroomFace.init(this, &VDRoom, "models/Walls_009_Plane.003.mgcg", MGCG);
 		bottomFace.init(this, &VDRoom, "models/floor_016_Mesh.338.mgcg", MGCG);
-		Marmchair.init(this, &VDArmchair, "models/armchair_001_Mesh.085.mgcg", MGCG);
-		Mbed.init(this, &VDBed, "models/bed_007_Mesh.6450.mgcg", MGCG);
+		Marmchair.init(this, &VDRoom, "models/armchair_001_Mesh.085.mgcg", MGCG);
+		Mbed.init(this, &VDRoom, "models/bed_007_Mesh.6450.mgcg", MGCG);
 		
 		// Create the textures used also for the internal objects
 
@@ -217,7 +201,7 @@ class A10 : public BaseProject {
 		DPSZs.texturesInPool = 40;
 		DPSZs.setsInPool = 40;
 
-std::cout << "Initializing text\n";
+		std::cout << "Initializing text\n";
 		txt.init(this, &outText);
 
 		std::cout << "Initialization completed!\n";
@@ -226,6 +210,76 @@ std::cout << "Initializing text\n";
 		std::cout << "Descriptor Sets in the Pool : " << DPSZs.setsInPool << "\n";
 		
 		//ViewMatrix = glm::translate(glm::mat4(1), -CamPos);
+
+		// Init local variables
+		nlohmann::json js;
+		std::ifstream ifs("models/Lights.json");
+		if (!ifs.is_open()) {
+			std::cout << "Error! Lights file not found!";
+			exit(-1);
+		}
+		try {
+			std::cout << "Parsing JSON\n";
+			ifs >> js;
+			ifs.close();
+			//			std::cout << "\n\n\nJson contains " << js.size() << " parts\n\n\n";
+			nlohmann::json ns = js["nodes"];
+			nlohmann::json ld = js["extensions"]["KHR_lights_punctual"]["lights"];
+			for (int i = 0; i < 2; i++) {
+				glm::vec3 T;
+				glm::vec3 S;
+				glm::quat Q;
+				if (ns[i].contains("translation")) {
+					//std::cout << "node " << i << " has T\n";
+					T = glm::vec3(ns[i]["translation"][0],
+						ns[i]["translation"][1],
+						ns[i]["translation"][2]);
+				}
+				else {
+					T = glm::vec3(0);
+				}
+				if (ns[i].contains("rotation")) {
+					//std::cout << "node " << i << " has Q\n";
+					Q = glm::quat(ns[i]["rotation"][3],
+						ns[i]["rotation"][0],
+						ns[i]["rotation"][1],
+						ns[i]["rotation"][2]);
+				}
+				else {
+					Q = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+				}
+				if (ns[i].contains("scale")) {
+					//std::cout << "node " << i << " has S\n";
+					S = glm::vec3(ns[i]["scale"][0],
+						ns[i]["scale"][1],
+						ns[i]["scale"][2]);
+				}
+				else {
+					S = glm::vec3(1);
+				}
+				//printVec3("T",T);
+				//printQuat("Q",Q);
+				//printVec3("S",S);
+				LWm[i] = glm::translate(glm::mat4(1), T) *
+					glm::mat4(Q) *
+					glm::scale(glm::mat4(1), S);
+				//printMat4("LWm", LWm[i]);
+				nlohmann::json cl = ld[i]["color"];
+				//std::cout << cl[0] << "\n";
+				LCol[i] = glm::vec3(cl[0], cl[1], cl[2]);
+				//printVec3("LCol",LCol[i]);
+				LInt[i] = ld[i]["intensity"];
+				//std::cout << LInt[i] << "\n\n";
+			}
+			
+		}
+		catch (const nlohmann::json::exception& e) {
+			std::cout << e.what() << '\n';
+		}
+		//std::cout << ScosIn << " " << ScosOut << "\n";
+
+		lightOn = glm::vec4(1);
+		std::cout << "Initialization completed!\n";
 	}
 	
 	// Here you create your pipelines and Descriptor Sets!
@@ -238,15 +292,16 @@ std::cout << "Initializing text\n";
 		PRoomBottomFace.create();
 		PArmChair.create();
 		Pbed.create();
+		// init the descriptor sets
 		DSRoomRightFace.init(this, &DSLRoomFace, { &Troom });
 		DSRoomFrontFace.init(this, &DSLRoomFace, {&Troom });
 		DSRoomLeftFace.init(this, &DSLRoomFace, {&Troom });
 		DSRoomBottomFace.init(this, &DSLRoomFace, {&Troom });
-		DSArmchair.init(this, &DSLArmchair, {&Troom});
-		DSBed.init(this, &DSLBed, {&Troom});
+		DSArmchair.init(this, &DSLRoomFace, {&Troom});
+		DSBed.init(this, &DSLRoomFace, {&Troom});
 	
 			
-		DSGlobalFrontFace.init(this, &DSLGlobal, {});
+		DSGlobal.init(this, &DSLGlobal, {});
 		//DSGlobalRigthFace.init(this, &DSLGlobal, {});
 		//DSGlobalArmchair.init(this, &DSLGlobal, {});
 		
@@ -274,7 +329,7 @@ std::cout << "Initializing text\n";
 		DSBed.cleanup();
 
 
-		DSGlobalFrontFace.cleanup();
+		DSGlobal.cleanup();
 		
 
 
@@ -296,10 +351,8 @@ std::cout << "Initializing text\n";
 		
 		// Cleanup descriptor set layouts
 
-		DSGlobalFrontFace.cleanup();
+		DSGlobal.cleanup();
 		DSLRoomFace.cleanup();
-		DSLArmchair.cleanup();
-		DSLBed.cleanup();
 		//DSLRoomFace.cleanup();
 	
 
@@ -322,6 +375,21 @@ std::cout << "Initializing text\n";
 	// with their buffers and textures
 	
 	void populateCommandBuffer(VkCommandBuffer commandBuffer, int currentImage) {
+		//armchair
+		Marmchair.bind(commandBuffer);
+		PArmChair.bind(commandBuffer);
+		DSArmchair.bind(commandBuffer, PArmChair, 1, currentImage);
+		DSGlobal.bind(commandBuffer, PArmChair, 0, currentImage);
+		vkCmdDrawIndexed(commandBuffer,
+			static_cast<uint32_t>(Marmchair.indices.size()), 1, 0, 0, 0);
+
+		//bed
+		Mbed.bind(commandBuffer);
+		Pbed.bind(commandBuffer);
+		DSGlobal.bind(commandBuffer, Pbed, 0, currentImage);
+		DSBed.bind(commandBuffer, Pbed, 1, currentImage);
+		vkCmdDrawIndexed(commandBuffer,
+			static_cast<uint32_t>(Mbed.indices.size()), 1, 0, 0, 0);
 		// binds the pipeline
 
 		PRoomFrontFace.bind(commandBuffer);
@@ -334,9 +402,9 @@ std::cout << "Initializing text\n";
 		// The descriptor sets, for each descriptor set specified in the pipeline
 		//DSGlobalFrontFace.bind(commandBuffer, PRoomFrontFace, 0, currentImage);	// The Global Descriptor Set (Set 0)
 		
-
-		DSRoomFrontFace.bind(commandBuffer, PRoomFrontFace, 0, currentImage);	// The Room Descriptor Set (Set 1)
 		
+		DSRoomFrontFace.bind(commandBuffer, PRoomFrontFace, 1, currentImage);	// The Room Descriptor Set (Set 1)
+		DSGlobal.bind(commandBuffer, PRoomFrontFace, 0, currentImage);
 					
 		// The actual draw call.
 		vkCmdDrawIndexed(commandBuffer,
@@ -349,15 +417,15 @@ std::cout << "Initializing text\n";
 		//Msun.bind(commandBuffer);
 
 		// The descriptor sets, for each descriptor set specified in the pipeline
-		DSRoomRightFace.bind(commandBuffer, PRoomRightFace, 0, currentImage);
-
+		DSRoomRightFace.bind(commandBuffer, PRoomRightFace, 1, currentImage);
+		DSGlobal.bind(commandBuffer, PRoomRightFace, 0, currentImage);
 		// The actual draw call.
 		vkCmdDrawIndexed(commandBuffer,
 			static_cast<uint32_t>(MroomFace.indices.size()), 1, 0, 0, 0);
 
 		PRoomLeftFace.bind(commandBuffer);
-		DSRoomLeftFace.bind(commandBuffer, PRoomLeftFace, 0, currentImage);
-
+		DSRoomLeftFace.bind(commandBuffer, PRoomLeftFace, 1, currentImage);
+		DSGlobal.bind(commandBuffer, PRoomLeftFace, 0, currentImage);
 		// The actual draw call.
 		vkCmdDrawIndexed(commandBuffer,
 			static_cast<uint32_t>(MroomFace.indices.size()), 1, 0, 0, 0);
@@ -367,8 +435,8 @@ std::cout << "Initializing text\n";
 		bottomFace.bind(commandBuffer);
 
 		PRoomBottomFace.bind(commandBuffer);
-		DSRoomBottomFace.bind(commandBuffer, PRoomBottomFace, 0, currentImage);
-
+		DSRoomBottomFace.bind(commandBuffer, PRoomBottomFace, 1, currentImage);
+		DSGlobal.bind(commandBuffer, PRoomBottomFace, 0, currentImage);
 		// The actual draw call.
 		vkCmdDrawIndexed(commandBuffer,
 			static_cast<uint32_t>(bottomFace.indices.size()), 1, 0, 0, 0);
@@ -376,19 +444,7 @@ std::cout << "Initializing text\n";
 
 		txt.populateCommandBuffer(commandBuffer, currentImage, currScene);
 
-		//armchair
-		Marmchair.bind(commandBuffer);
-		PArmChair.bind(commandBuffer);
-		DSArmchair.bind(commandBuffer, PArmChair, 0, currentImage);
-		vkCmdDrawIndexed(commandBuffer,
-						static_cast<uint32_t>(Marmchair.indices.size()), 1, 0, 0, 0);
-
-		//bed
-		Mbed.bind(commandBuffer);
-		Pbed.bind(commandBuffer);
-		DSBed.bind(commandBuffer, Pbed, 0, currentImage);
-		vkCmdDrawIndexed(commandBuffer,
-						static_cast<uint32_t>(Mbed.indices.size()), 1, 0, 0, 0);
+		
 	}
 
 	// Here is where you update the uniforms.
@@ -477,7 +533,62 @@ std::cout << "Initializing text\n";
 				curDebounce = 0;
 			}
 		}
+		if (glfwGetKey(window, GLFW_KEY_1)) {
+			if (!debounce) {
+				debounce = true;
+				curDebounce = GLFW_KEY_1;
+				std::cout << " value1= " << lightOn.x << ";\n";
+				lightOn.x = 1 - lightOn.x;
+			}
+		}
+		else {
+			if ((curDebounce == GLFW_KEY_1) && debounce) {
+				debounce = false;
+				curDebounce = 0;
+			}
+		}
 
+		if (glfwGetKey(window, GLFW_KEY_2)) {
+			if (!debounce) {
+				debounce = true;
+				curDebounce = GLFW_KEY_2;
+				lightOn.y = 1 - lightOn.y;
+			}
+		}
+		else {
+			if ((curDebounce == GLFW_KEY_2) && debounce) {
+				debounce = false;
+				curDebounce = 0;
+			}
+		}
+
+		if (glfwGetKey(window, GLFW_KEY_3)) {
+			if (!debounce) {
+				debounce = true;
+				curDebounce = GLFW_KEY_3;
+				lightOn.z = 1 - lightOn.z;
+			}
+		}
+		else {
+			if ((curDebounce == GLFW_KEY_3) && debounce) {
+				debounce = false;
+				curDebounce = 0;
+			}
+		}
+
+		if (glfwGetKey(window, GLFW_KEY_4)) {
+			if (!debounce) {
+				debounce = true;
+				curDebounce = GLFW_KEY_4;
+				lightOn.w = 1 - lightOn.w;
+			}
+		}
+		else {
+			if ((curDebounce == GLFW_KEY_4) && debounce) {
+				debounce = false;
+				curDebounce = 0;
+			}
+		}
 
 		/*		if(currScene == 1) {
 					switch(subpass) {
@@ -545,42 +656,55 @@ std::cout << "Initializing text\n";
 		// updates global uniforms
 		// Global
 		GlobalUniformBufferObject gubo{};
-		gubo.lightDir = glm::vec3(cos(glm::radians(135.0f)) * cos(cTime * angTurnTimeFact), sin(glm::radians(135.0f)), cos(glm::radians(135.0f)) * sin(cTime * angTurnTimeFact));
-		gubo.lightColor = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-		gubo.eyePos = CamPos;
-		DSGlobalFrontFace.map(currentImage, &gubo, 0);
+		for (int i = 0; i < 2; i++) {
+			gubo.lightColor[i] = glm::vec4(LCol[i], LInt[i]);
+			gubo.lightDir[i] = LWm[i] * glm::vec4(0, 0, 1, 0);// direction taken by multiplying the vector (0,0,1) by the light world matrix, we just need the Z component direction
+			gubo.lightPos[i] = LWm[i] * glm::vec4(0, 0, 0, 1); //position taken by multiplying the vector (0,0,0) by the light world matrix, we just need the the last component of the matrix that indicates the position in the space where the light it has been put
+		}
+		DSGlobal.map(currentImage, &gubo, 0);
 
 		// objects
 		RoomUniformBufferObject roomFrontFaceUbo{};
-		roomFrontFaceUbo.mvpMat = ViewPrj * glm::translate(glm::mat4(1),glm::vec3(0,0,-4))* initialTranslation() * glm::scale(glm::mat4(1), glm::vec3(3, 1, 1)) * baseTr;
+		roomFrontFaceUbo.mMat= glm::translate(glm::mat4(1), glm::vec3(0, 0, -4)) * initialTranslation() * glm::scale(glm::mat4(1), glm::vec3(3, 1, 1)) * baseTr;
+		roomFrontFaceUbo.mvpMat = ViewPrj* roomFrontFaceUbo.mMat;
+		roomFrontFaceUbo.nMat = glm::inverse(glm::transpose(roomFrontFaceUbo.mMat));
 		//roomRightFaceUbo.mvpMat = ViewPrj * glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0, 1, 0)) * baseTr;
 		//DSRoomRightFace.map(currentImage, &roomRightFaceUbo, 0);
 		DSRoomFrontFace.map(currentImage, &roomFrontFaceUbo, 0);
 
 		RoomUniformBufferObject roomRightFaceUbo{};
-		roomRightFaceUbo.mvpMat = ViewPrj *glm::translate(glm::mat4(1),glm::vec3(6,0,2))*initialTranslation()* glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0, 1, 0)) * glm::scale(glm::mat4(1), glm::vec3(3, 1, 1))* baseTr;
-		
+		roomRightFaceUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(6, 0, 2)) * initialTranslation() * glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0, 1, 0)) * glm::scale(glm::mat4(1), glm::vec3(3, 1, 1)) * baseTr;
+		roomRightFaceUbo.mvpMat = ViewPrj* roomRightFaceUbo.mMat;
+		roomRightFaceUbo.nMat = glm::inverse(glm::transpose(roomRightFaceUbo.mMat));
 		DSRoomRightFace.map(currentImage, &roomRightFaceUbo, 0);
 
 		RoomUniformBufferObject roomLeftFaceUbo{};
-		roomLeftFaceUbo.mvpMat = ViewPrj * glm::translate(glm::mat4(1), glm::vec3(-6, 0, 2))*initialTranslation() * glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(0, 1, 0)) * glm::scale(glm::mat4(1), glm::vec3(3, 1, 1)) * baseTr;
+		roomLeftFaceUbo.mMat=glm::translate(glm::mat4(1), glm::vec3(-6, 0, 2))* initialTranslation()* glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(0, 1, 0))* glm::scale(glm::mat4(1), glm::vec3(3, 1, 1))* baseTr;
+		roomLeftFaceUbo.mvpMat = ViewPrj * roomLeftFaceUbo.mMat;
+		roomLeftFaceUbo.nMat = glm::inverse(glm::transpose(roomLeftFaceUbo.mMat));
 
 		DSRoomLeftFace.map(currentImage, &roomLeftFaceUbo, 0);
 
 		RoomUniformBufferObject roomBottomFaceUbo{};
+		roomBottomFaceUbo.mMat= glm::translate(glm::mat4(1), glm::vec3(0, 0, +2)) * initialTranslation() * glm::scale(glm::mat4(1), glm::vec3(3, 1, 3)) * baseTr;
 		//roomBottomFaceUbo.mvpMat = ViewPrj * glm::translate(glm::mat4(1), glm::vec3(0, 0, -4)) *initialTranslation()* glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1, 0, 0)) * glm::scale(glm::mat4(1), glm::vec3(3, 3, 1)) * baseTr;
-		roomBottomFaceUbo.mvpMat = ViewPrj * glm::translate(glm::mat4(1), glm::vec3(0, 0, +2)) * initialTranslation() * glm::scale(glm::mat4(1), glm::vec3(3, 1, 3)) * baseTr;
+		roomBottomFaceUbo.mvpMat = ViewPrj * roomBottomFaceUbo.mMat;
+		roomBottomFaceUbo.nMat = glm::inverse(glm::transpose(roomBottomFaceUbo.mMat));
 
 		DSRoomBottomFace.map(currentImage, &roomBottomFaceUbo, 0);
 
 		//armchair
 		armchairUniformBufferObject armchairUbo{};
-		armchairUbo.mvpMat = ViewPrj * glm::translate(glm::mat4(1), glm::vec3(4.5, 0, 6)) * initialTranslation() * glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(0, 1, 0)) *glm::scale(glm::mat4(1), glm::vec3(1.5, 1.5, 1.5)) * baseTr;
+		armchairUbo.mMat= glm::translate(glm::mat4(1), glm::vec3(4.5, 0, 6)) * initialTranslation() * glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(0, 1, 0)) * glm::scale(glm::mat4(1), glm::vec3(1.5, 1.5, 1.5)) * baseTr;
+		armchairUbo.mvpMat = ViewPrj * armchairUbo.mMat;
+		armchairUbo.nMat = glm::inverse(glm::transpose(armchairUbo.mMat));
 		DSArmchair.map(currentImage, &armchairUbo, 0);
 
 		//bed
 		bedUniformBufferObject bedUbo{};
-		bedUbo.mvpMat = ViewPrj * glm::translate(glm::mat4(1), glm::vec3(0, 0, -1.25)) * initialTranslation() * glm::scale(glm::mat4(1), glm::vec3(2.5, 2.5, 2.5)) * baseTr;
+		bedUbo.mMat= glm::translate(glm::mat4(1), glm::vec3(0, 0, -1.25)) * initialTranslation() * glm::scale(glm::mat4(1), glm::vec3(2.5, 2.5, 2.5)) * baseTr;
+		bedUbo.mvpMat = ViewPrj * bedUbo.mMat;
+		bedUbo.nMat = glm::inverse(glm::transpose(bedUbo.mMat));
 		DSBed.map(currentImage, &bedUbo, 0);
 
 	}

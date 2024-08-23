@@ -1,0 +1,92 @@
+{
+    "asset" : {
+        "generator" : "Khronos glTF Blender I/O v3.3.36",
+        "version" : "2.0"
+    },
+    "extensionsUsed" : [
+        "KHR_lights_punctual"
+    ],
+    "extensionsRequired" : [
+        "KHR_lights_punctual"
+    ],
+    "extensions" : {
+        "KHR_lights_punctual" : {
+            "lights" : [
+               
+                {
+                    "color" : [
+                        0.681277871131897,
+                        1,
+                        0.9654425978660583
+                    ],
+                    "intensity" : 1.8,
+                    "type" : "point",
+                    "name" : "Light.001"
+                },
+                
+                {
+                    "color" : [
+                        1,
+                        0.9,
+                        0.85
+                    ],
+                    "intensity" : 1,
+                    "type" : "directional",
+                    "name" : "Sun"
+                }
+
+            ]
+        }
+    },
+    "scene" : 0,
+    "scenes" : [
+        {
+            "name" : "Scene",
+            "nodes" : [
+                0,
+                1
+            ]
+        }
+    ],
+    "nodes" : [
+        
+        {
+            "extensions" : {
+                "KHR_lights_punctual" : {
+                    "light" : 1
+                }
+            },
+            "name" : "Light.001",
+            "rotation" : [
+                -0.2841663062572479,
+                0.7269423604011536,
+                0.34203392267227173,
+                0.5232754349708557
+            ],
+            "translation" : [
+                0.01860114187002182,
+                2.9545438289642334,
+                -6.274837017059326
+            ]
+        },
+        {
+            "extensions" : {
+                "KHR_lights_punctual" : {
+                    "light" : 3
+                }
+            },
+            "name" : "Sun",
+            "rotation" : [
+                -0.3960249125957489,
+                0.1478610783815384,
+                -0.1478610783815384,
+                0.8941132426261902
+            ],
+            "translation" : [
+                3.6413424015045166,
+                3.3561453819274902,
+                1.1169260740280151
+            ]
+        }
+    ]
+}
