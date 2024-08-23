@@ -98,7 +98,7 @@ class A10 : public BaseProject {
 	DescriptorSet DSGlobal;
 
 	Model MroomFace, bottomFace;
-	Texture Troom;
+	Texture Troom,Tbed;
 	DescriptorSet DSRoomFrontFace, DSRoomRightFace, DSRoomLeftFace, DSRoomBottomFace;
 
 	Model Marmchair;
@@ -108,6 +108,7 @@ class A10 : public BaseProject {
 	Model Mbed;
 	//we can use the same texture used for the room
 	DescriptorSet DSBed;
+	
 
 	
 // Other application parameters
@@ -187,11 +188,12 @@ class A10 : public BaseProject {
 		MroomFace.init(this, &VDRoom, "models/Walls_009_Plane.003.mgcg", MGCG);
 		bottomFace.init(this, &VDRoom, "models/floor_016_Mesh.338.mgcg", MGCG);
 		Marmchair.init(this, &VDRoom, "models/armchair_001_Mesh.085.mgcg", MGCG);
-		Mbed.init(this, &VDRoom, "models/bed_007_Mesh.6450.mgcg", MGCG);
+		Mbed.init(this, &VDRoom, "models/Bed.obj", OBJ);
 		
 		// Create the textures used also for the internal objects
 
 		Troom.init(this, "textures/Textures_Forniture.png");
+		Tbed.init(this, "textures/Bed_texture.png");
 		
 
 		// Descriptor pool sizes
@@ -298,7 +300,7 @@ class A10 : public BaseProject {
 		DSRoomLeftFace.init(this, &DSLRoomFace, {&Troom });
 		DSRoomBottomFace.init(this, &DSLRoomFace, {&Troom });
 		DSArmchair.init(this, &DSLRoomFace, {&Troom});
-		DSBed.init(this, &DSLRoomFace, {&Troom});
+		DSBed.init(this, &DSLRoomFace, {&Tbed });
 	
 			
 		DSGlobal.init(this, &DSLGlobal, {});
@@ -343,6 +345,7 @@ class A10 : public BaseProject {
 	void localCleanup() {	
 
 		Troom.cleanup();
+		Tbed.cleanup();
 		MroomFace.cleanup();
 		bottomFace.cleanup();
 		Marmchair.cleanup();
@@ -703,7 +706,7 @@ class A10 : public BaseProject {
 		//bed
 		bedUniformBufferObject bedUbo{};
 		bedUbo.mMat= glm::translate(glm::mat4(1), glm::vec3(0, 0, -1.25)) * initialTranslation() * glm::scale(glm::mat4(1), glm::vec3(2.5, 2.5, 2.5)) * baseTr;
-		bedUbo.mvpMat = ViewPrj * bedUbo.mMat;
+		bedUbo.mvpMat = ViewPrj * baseTr;
 		bedUbo.nMat = glm::inverse(glm::transpose(bedUbo.mMat));
 		DSBed.map(currentImage, &bedUbo, 0);
 
