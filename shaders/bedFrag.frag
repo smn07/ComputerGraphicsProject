@@ -22,7 +22,7 @@ layout(set=0,binding = 0) uniform GlobalUniformBufferObject {
 	vec3 eyePos;
 	vec4 lightOn;
 	} gubo;
-
+////////// NOT USED ///////////////
 vec3 direct_light_dir(vec3 pos, int i) {
  // Direct light - direction vector
  // Direction of the light in <gubo.lightDir[i]>
@@ -34,7 +34,7 @@ vec3 direct_light_color(vec3 pos, int i) {
  // Color of the light in <gubo.lightColor[i].rgb>
  return gubo.lightColor[i].rgb;
 }
-
+////////////////////////////////////
 vec3 point_light_dir(vec3 pos, int i) {
  // Point light - direction vector
  // Position of the light in <gubo.lightPos[i]>
@@ -51,14 +51,11 @@ vec3 point_light_color(vec3 pos, int i) {
  
 }
 vec3 BRDF(vec3 Albedo, vec3 Norm, vec3 EyeDir, vec3 LD) {
-// Compute the BRDF, with a given color <Albedo>, in a given position characterized bu a given normal vector <Norm>,
-// for a light direct according to <LD>, and viewed from a direction <EyeDir>
+// Just the diffuse part of the BRDF because parts of the bed does not have specular reflection--> they don't reflect light
 	vec3 Diffuse;
 	vec3 Specular;
 	Diffuse = Albedo * max(dot(Norm, LD),0.0f);
-	Specular = vec3(pow(max(dot(EyeDir, -reflect(LD, Norm)),0.0f), 160.0f));
-	
-	return Diffuse + Specular;
+	return Diffuse ;
 }
 
 void main() {
@@ -73,25 +70,13 @@ void main() {
 	// First light
 	LD = point_light_dir(fragPos, 0);
 	LC = point_light_color(fragPos, 0);
-	RendEqSol += BRDF(Albedo, Norm, EyeDir, LD) * LC * gubo.lightOn.x;
+	RendEqSol += BRDF(Albedo, Norm, EyeDir, LD) * LC * gubo.lightOn.x;// point light
 	// Fourth light
 	LD = direct_light_dir(fragPos, 3);
 	LC = direct_light_color(fragPos, 3);
-	RendEqSol += BRDF(Albedo, Norm, EyeDir, LD) * LC         * gubo.lightOn.y;
+	//RendEqSol += BRDF(Albedo, Norm, EyeDir, LD) * LC * gubo.lightOn.y;// direct light
 
-	// Indirect illumination simulation
-	// A special type of non-uniform ambient color, invented for this course
-	const vec3 cxp = vec3(1.0,0.5,0.5) * 0.2;
-	const vec3 cxn = vec3(0.9,0.6,0.4) * 0.2;
-	const vec3 cyp = vec3(0.3,1.0,1.0) * 0.2;
-	const vec3 cyn = vec3(0.5,0.5,0.5) * 0.2;
-	const vec3 czp = vec3(0.8,0.2,0.4) * 0.2;
-	const vec3 czn = vec3(0.3,0.6,0.7) * 0.2;
-	
-	vec3 Ambient =((Norm.x > 0 ? cxp : cxn) * (Norm.x * Norm.x) +
-				   (Norm.y > 0 ? cyp : cyn) * (Norm.y * Norm.y) +
-				   (Norm.z > 0 ? czp : czn) * (Norm.z * Norm.z)) * Albedo;
-	RendEqSol += Ambient         * gubo.lightOn.w;
+
 	
 	// Output color
 	outColor = vec4(RendEqSol, 1.0f);

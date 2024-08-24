@@ -97,7 +97,7 @@ class A10 : public BaseProject {
 	DescriptorSet DSGlobal;
 
 	Model MroomFace, bottomFace;
-	Texture Troom,Tbed;
+	Texture Troom,Tbed,TarmChair;
 	DescriptorSet DSRoomFrontFace, DSRoomRightFace, DSRoomLeftFace, DSRoomBottomFace;
 
 	Model Marmchair;
@@ -186,13 +186,14 @@ class A10 : public BaseProject {
 
 		MroomFace.init(this, &VDRoom, "models/Walls_009_Plane.003.mgcg", MGCG);
 		bottomFace.init(this, &VDRoom, "models/floor_016_Mesh.338.mgcg", MGCG);
-		Marmchair.init(this, &VDRoom, "models/armchair_001_Mesh.085.mgcg", MGCG);
+		Marmchair.init(this, &VDRoom, "models/Armchair.obj", OBJ);
 		Mbed.init(this, &VDRoom, "models/Bed.obj", OBJ);
 		
 		// Create the textures used also for the internal objects
 
 		Troom.init(this, "textures/Textures_Forniture.png");
 		Tbed.init(this, "textures/Bed_texture.png");
+		TarmChair.init(this, "textures/Armchair_Texture.png");
 		
 
 		// Descriptor pool sizes
@@ -298,7 +299,7 @@ class A10 : public BaseProject {
 		DSRoomFrontFace.init(this, &DSLRoomFace, {&Troom });
 		DSRoomLeftFace.init(this, &DSLRoomFace, {&Troom });
 		DSRoomBottomFace.init(this, &DSLRoomFace, {&Troom });
-		DSArmchair.init(this, &DSLRoomFace, {&Troom});
+		DSArmchair.init(this, &DSLRoomFace, {&TarmChair});
 		DSBed.init(this, &DSLRoomFace, {&Tbed });
 	
 			
@@ -345,6 +346,7 @@ class A10 : public BaseProject {
 
 		Troom.cleanup();
 		Tbed.cleanup();
+		TarmChair.cleanup();
 		MroomFace.cleanup();
 		bottomFace.cleanup();
 		Marmchair.cleanup();
@@ -701,7 +703,7 @@ class A10 : public BaseProject {
 
 		//armchair
 		armchairUniformBufferObject armchairUbo{};
-		armchairUbo.mMat= glm::translate(glm::mat4(1), glm::vec3(4.5, 0, 6)) * initialTranslation() * glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(0, 1, 0)) * glm::scale(glm::mat4(1), glm::vec3(1.5, 1.5, 1.5)) * baseTr;
+		armchairUbo.mMat= glm::translate(glm::mat4(1), glm::vec3(4.5, 0, 2)) * initialTranslation() * glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(0, 1, 0))  * baseTr;
 		armchairUbo.mvpMat = ViewPrj * armchairUbo.mMat;
 		armchairUbo.nMat = glm::inverse(glm::transpose(armchairUbo.mMat));
 		DSArmchair.map(currentImage, &armchairUbo, 0);
