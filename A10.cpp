@@ -18,11 +18,10 @@ std::vector<SingleText> outText = {
 
 
 struct GlobalUniformBufferObject {
-	alignas(16) glm::vec3 lightDir[5];
-	alignas(16) glm::vec3 lightPos[5];
-	alignas(16) glm::vec4 lightColor[5];
+	alignas(16) glm::vec3 lightDir[2];
+	alignas(16) glm::vec3 lightPos[2];
+	alignas(16) glm::vec4 lightColor[2];
 	alignas(16) glm::vec3 eyePos;
-	alignas(16) glm::vec4 eyeDir;
 	alignas(16) glm::vec4 lightOn;
 };
 
@@ -259,26 +258,26 @@ class A10 : public BaseProject {
 				else {
 					S = glm::vec3(1);
 				}
-				//printVec3("T",T);
-				//printQuat("Q",Q);
-				//printVec3("S",S);
+				printVec3("T",T);
+				printQuat("Q",Q);
+				printVec3("S",S);
 				LWm[i] = glm::translate(glm::mat4(1), T) *
 					glm::mat4(Q) *
 					glm::scale(glm::mat4(1), S);
-				//printMat4("LWm", LWm[i]);
+				printMat4("LWm", LWm[i]);
 				nlohmann::json cl = ld[i]["color"];
-				//std::cout << cl[0] << "\n";
+				std::cout << cl[0] << "\n";
 				LCol[i] = glm::vec3(cl[0], cl[1], cl[2]);
-				//printVec3("LCol",LCol[i]);
+				printVec3("LCol",LCol[i]);
 				LInt[i] = ld[i]["intensity"];
-				//std::cout << LInt[i] << "\n\n";
+				std::cout << LInt[i] << "\n\n";
 			}
 			
 		}
 		catch (const nlohmann::json::exception& e) {
 			std::cout << e.what() << '\n';
 		}
-		//std::cout << ScosIn << " " << ScosOut << "\n";
+		
 
 		lightOn = glm::vec4(1);
 		std::cout << "Initialization completed!\n";
@@ -658,7 +657,11 @@ class A10 : public BaseProject {
 
 		// updates global uniforms
 		// Global
+
+		
 		GlobalUniformBufferObject gubo{};
+		gubo.eyePos = CamPos;
+		gubo.lightOn = lightOn;
 		for (int i = 0; i < 2; i++) {
 			gubo.lightColor[i] = glm::vec4(LCol[i], LInt[i]);
 			gubo.lightDir[i] = LWm[i] * glm::vec4(0, 0, 1, 0);// direction taken by multiplying the vector (0,0,1) by the light world matrix, we just need the Z component direction
@@ -705,8 +708,8 @@ class A10 : public BaseProject {
 
 		//bed
 		bedUniformBufferObject bedUbo{};
-		bedUbo.mMat= glm::translate(glm::mat4(1), glm::vec3(0, 0, -1.25)) * initialTranslation() * glm::scale(glm::mat4(1), glm::vec3(2.5, 2.5, 2.5)) * baseTr;
-		bedUbo.mvpMat = ViewPrj * baseTr;
+		bedUbo.mMat= glm::translate(glm::mat4(1), glm::vec3(0, 0, -2.7)) * initialTranslation() * baseTr;
+		bedUbo.mvpMat = ViewPrj * bedUbo.mMat;
 		bedUbo.nMat = glm::inverse(glm::transpose(bedUbo.mMat));
 		DSBed.map(currentImage, &bedUbo, 0);
 
