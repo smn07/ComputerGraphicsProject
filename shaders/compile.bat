@@ -21,5 +21,10 @@ glslc C:\Users\spagn\source\repos\ComputerGraphicsProject\shaders\leftRightFaceS
 
 glslc C:\Users\spagn\source\repos\ComputerGraphicsProject\shaders\frontFaceShader.frag -o frontFragShader.spv
 
+glslc C:\Users\spagn\source\repos\ComputerGraphicsProject\shaders\kitchenShader.frag -o kitchenFrag.spv
+
+glslc C:\Users\spagn\source\repos\ComputerGraphicsProject\shaders\kitchenShader.vert -o kitchenVert.spv
+
+
 echo Compilazione completata.
 

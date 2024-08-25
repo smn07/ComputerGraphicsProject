@@ -18,9 +18,9 @@ std::vector<SingleText> outText = {
 
 
 struct GlobalUniformBufferObject {
-	alignas(16) glm::vec3 lightDir[2];
-	alignas(16) glm::vec3 lightPos[2];
-	alignas(16) glm::vec4 lightColor[2];
+	alignas(16) glm::vec3 lightDir[4];
+	alignas(16) glm::vec3 lightPos[4];
+	alignas(16) glm::vec4 lightColor[4];
 	alignas(16) glm::vec3 eyePos;
 	alignas(16) glm::vec4 lightOn;
 };
@@ -68,7 +68,7 @@ struct bedVertex {
 };
 
 */
-
+const int numLight = 4;
 // MAIN ! 
 class A10 : public BaseProject {
 	protected:
@@ -88,7 +88,7 @@ class A10 : public BaseProject {
 
 	// Pipelines [Shader couples]
 
-	Pipeline PRoomFrontFace,PRoomRightFace,PRoomLeftFace,PRoomBottomFace,PArmChair,Pbed;
+	Pipeline PRoomFrontFace,PRoomRightFace,PRoomLeftFace,PRoomBottomFace,PArmChair,Pbed,PTable,Pkitchen;
 
 	// Scenes and texts
     TextMaker txt;
@@ -96,17 +96,10 @@ class A10 : public BaseProject {
 	// Models, textures and Descriptor Sets (values assigned to the uniforms)
 	DescriptorSet DSGlobal;
 
-	Model MroomFace, bottomFace;
-	Texture Troom,Tbed,TarmChair;
-	DescriptorSet DSRoomFrontFace, DSRoomRightFace, DSRoomLeftFace, DSRoomBottomFace;
+	Model MroomFace, bottomFace, Marmchair, Mbed,Mtable,Mkitchen;
+	Texture Troom,Tbed,TarmChair,Ttable;
+	DescriptorSet DSRoomFrontFace, DSRoomRightFace, DSRoomLeftFace, DSRoomBottomFace, DSArmchair, DSBed,DSTable,DSKitchen;
 
-	Model Marmchair;
-	//we can use the same texture used for the room
-	DescriptorSet DSArmchair;
-
-	Model Mbed;
-	//we can use the same texture used for the room
-	DescriptorSet DSBed;
 	
 
 	
@@ -181,6 +174,8 @@ class A10 : public BaseProject {
 		PRoomBottomFace.init(this, &VDRoom, "shaders/facesRoomVert.spv", "shaders/bottomFrag.spv", { &DSLGlobal,&DSLRoomFace });
 		PArmChair.init(this, &VDRoom, "shaders/armchairVert.spv", "shaders/armchairFrag.spv", { &DSLGlobal,&DSLRoomFace });
 		Pbed.init(this, &VDRoom, "shaders/bedVert.spv", "shaders/bedFrag.spv", { &DSLGlobal,&DSLRoomFace });
+		PTable.init(this, &VDRoom, "shaders/facesRoomVert.spv", "shaders/bottomFrag.spv", { &DSLGlobal,&DSLRoomFace });
+		Pkitchen.init(this, &VDRoom, "shaders/kitchenVert.spv", "shaders/kitchenFrag.spv", { &DSLGlobal,&DSLRoomFace });
 
 		// Create models
 
@@ -188,12 +183,15 @@ class A10 : public BaseProject {
 		bottomFace.init(this, &VDRoom, "models/floor_016_Mesh.338.mgcg", MGCG);
 		Marmchair.init(this, &VDRoom, "models/Armchair.obj", OBJ);
 		Mbed.init(this, &VDRoom, "models/Bed.obj", OBJ);
+		Mtable.init(this, &VDRoom, "models/Table.obj", OBJ);
+		Mkitchen.init(this, &VDRoom, "models/kitchen_item_024_Mesh.583.mgcg", MGCG);
 		
 		// Create the textures used also for the internal objects
 
 		Troom.init(this, "textures/Textures_Forniture.png");
 		Tbed.init(this, "textures/Bed_texture.png");
 		TarmChair.init(this, "textures/Armchair_Texture.png");
+		Ttable.init(this, "textures/Table_Texture.jpg");
 		
 
 		// Descriptor pool sizes
@@ -227,7 +225,7 @@ class A10 : public BaseProject {
 			//			std::cout << "\n\n\nJson contains " << js.size() << " parts\n\n\n";
 			nlohmann::json ns = js["nodes"];
 			nlohmann::json ld = js["extensions"]["KHR_lights_punctual"]["lights"];
-			for (int i = 0; i < 2; i++) {
+			for (int i = 0; i < numLight; i++) {
 				glm::vec3 T;
 				glm::vec3 S;
 				glm::quat Q;
@@ -294,6 +292,9 @@ class A10 : public BaseProject {
 		PRoomBottomFace.create();
 		PArmChair.create();
 		Pbed.create();
+		PTable.create();
+		Pkitchen.create();
+
 		// init the descriptor sets
 		DSRoomRightFace.init(this, &DSLRoomFace, { &Troom });
 		DSRoomFrontFace.init(this, &DSLRoomFace, {&Troom });
@@ -301,6 +302,8 @@ class A10 : public BaseProject {
 		DSRoomBottomFace.init(this, &DSLRoomFace, {&Troom });
 		DSArmchair.init(this, &DSLRoomFace, {&TarmChair});
 		DSBed.init(this, &DSLRoomFace, {&Tbed });
+		DSTable.init(this, &DSLRoomFace, {&Ttable });
+		DSKitchen.init(this, &DSLRoomFace, {&Troom });
 	
 			
 		DSGlobal.init(this, &DSLGlobal, {});
@@ -322,6 +325,9 @@ class A10 : public BaseProject {
 		PRoomBottomFace.cleanup();
 		PArmChair.cleanup();
 		Pbed.cleanup();
+		PTable.cleanup();
+		Pkitchen.cleanup();
+
 
 		DSRoomRightFace.cleanup();
 		DSRoomLeftFace.cleanup();
@@ -329,6 +335,8 @@ class A10 : public BaseProject {
 		DSRoomBottomFace.cleanup();
 		DSArmchair.cleanup();
 		DSBed.cleanup();
+		DSTable.cleanup();
+		DSKitchen.cleanup();
 
 
 		DSGlobal.cleanup();
@@ -351,6 +359,8 @@ class A10 : public BaseProject {
 		bottomFace.cleanup();
 		Marmchair.cleanup();
 		Mbed.cleanup();
+		Mtable.cleanup();
+		Mkitchen.cleanup();
 
 		
 		// Cleanup descriptor set layouts
@@ -368,12 +378,12 @@ class A10 : public BaseProject {
 		PRoomBottomFace.destroy();
 		PArmChair.destroy();
 		Pbed.destroy();
+		PTable.destroy();
+		Pkitchen.destroy();
 
 		txt.localCleanup();		
 	}
-	glm::mat4 initialTranslation() {
-		return glm::translate(glm::mat4(1), glm::vec3(0, -5, -15));
-	}
+	
 	// Here it is the creation of the command buffer:
 	// You send to the GPU all the objects you want to draw,
 	// with their buffers and textures
@@ -444,13 +454,28 @@ class A10 : public BaseProject {
 		// The actual draw call.
 		vkCmdDrawIndexed(commandBuffer,
 			static_cast<uint32_t>(bottomFace.indices.size()), 1, 0, 0, 0);
-
+		PTable.bind(commandBuffer);
+		Mtable.bind(commandBuffer);
+		DSGlobal.bind(commandBuffer, PTable, 0, currentImage);
+		DSTable.bind(commandBuffer, PTable, 1, currentImage);
+		vkCmdDrawIndexed(commandBuffer,
+						static_cast<uint32_t>(Mtable.indices.size()), 1, 0, 0, 0);
+		
+		Pkitchen.bind(commandBuffer);
+		Mkitchen.bind(commandBuffer);
+		DSGlobal.bind(commandBuffer, Pkitchen, 0, currentImage);
+		DSKitchen.bind(commandBuffer, Pkitchen, 1, currentImage);
+		vkCmdDrawIndexed(commandBuffer,
+						static_cast<uint32_t>(Mkitchen.indices.size()), 1, 0, 0, 0);
 
 		txt.populateCommandBuffer(commandBuffer, currentImage, currScene);
 
 		
 	}
-
+	// put all the object in a certain initial position in the screen 
+	glm::mat4 initialTranslation() {
+		return glm::translate(glm::mat4(1), glm::vec3(0, -5, -15));
+	}
 	// Here is where you update the uniforms.
 	// Very likely this will be where you will be writing the logic of your application.
 	void updateUniformBuffer(uint32_t currentImage) {
@@ -664,7 +689,7 @@ class A10 : public BaseProject {
 		GlobalUniformBufferObject gubo{};
 		gubo.eyePos = CamPos;
 		gubo.lightOn = lightOn;
-		for (int i = 0; i < 2; i++) {
+		for (int i = 0; i < numLight; i++) {
 			gubo.lightColor[i] = glm::vec4(LCol[i], LInt[i]);
 			gubo.lightDir[i] = LWm[i] * glm::vec4(0, 0, 1, 0);// direction taken by multiplying the vector (0,0,1) by the light world matrix, we just need the Z component direction
 			gubo.lightPos[i] = LWm[i] * glm::vec4(0, 0, 0, 1); //position taken by multiplying the vector (0,0,0) by the light world matrix, we just need the the last component of the matrix that indicates the position in the space where the light it has been put
@@ -703,17 +728,31 @@ class A10 : public BaseProject {
 
 		//armchair
 		armchairUniformBufferObject armchairUbo{};
-		armchairUbo.mMat= glm::translate(glm::mat4(1), glm::vec3(4.5, 0, 2)) * initialTranslation() * glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(0, 1, 0))  * baseTr;
+		armchairUbo.mMat= glm::translate(glm::mat4(1), glm::vec3(5, 0.35, 2)) * initialTranslation() * glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(0, 1, 0))* glm::scale(glm::mat4(1), glm::vec3(0.7, 0.7, 0.7)) * baseTr;
 		armchairUbo.mvpMat = ViewPrj * armchairUbo.mMat;
 		armchairUbo.nMat = glm::inverse(glm::transpose(armchairUbo.mMat));
 		DSArmchair.map(currentImage, &armchairUbo, 0);
 
 		//bed
 		bedUniformBufferObject bedUbo{};
-		bedUbo.mMat= glm::translate(glm::mat4(1), glm::vec3(0, 0, -2.7)) * initialTranslation() * baseTr;
+		bedUbo.mMat= glm::translate(glm::mat4(1), glm::vec3(1, -0.1, -2.7)) * initialTranslation() * baseTr;
 		bedUbo.mvpMat = ViewPrj * bedUbo.mMat;
 		bedUbo.nMat = glm::inverse(glm::transpose(bedUbo.mMat));
 		DSBed.map(currentImage, &bedUbo, 0);
+
+		//table
+		RoomUniformBufferObject tableUbo{};
+		tableUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(0, 0.3, +4))*initialTranslation() * glm::scale(glm::mat4(1), glm::vec3(0.8, 0.8, 0.8)) * baseTr;
+		tableUbo.mvpMat = ViewPrj * tableUbo.mMat;
+		tableUbo.nMat = glm::inverse(glm::transpose(tableUbo.mMat));
+		DSTable.map(currentImage, &tableUbo, 0);
+
+		//kitchen
+		RoomUniformBufferObject kitchenUbo{};
+		kitchenUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(-5.8, 0, -3.7))*initialTranslation() * glm::scale(glm::mat4(1), glm::vec3(1.5, 1.5, 1.5))*baseTr;
+		kitchenUbo.mvpMat = ViewPrj * kitchenUbo.mMat;
+		kitchenUbo.nMat = glm::inverse(glm::transpose(kitchenUbo.mMat));
+		DSKitchen.map(currentImage, &kitchenUbo, 0);
 
 	}
 };

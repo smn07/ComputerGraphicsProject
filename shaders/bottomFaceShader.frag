@@ -16,9 +16,9 @@ layout(location = 0) out vec4 outColor;
 layout(set = 1, binding = 1) uniform sampler2D room;
 
 layout(set=0,binding = 0) uniform GlobalUniformBufferObject {
-	vec3 lightDir[2];
-	vec3 lightPos[2];
-	vec4 lightColor[2];
+	vec3 lightDir[4];
+	vec3 lightPos[4];
+	vec4 lightColor[4];
 	vec3 eyePos;
 	vec4 lightOn;
 	} gubo;
@@ -71,7 +71,7 @@ vec3 BRDF(vec3 objectColor, vec3 Norm, vec3 EyeDir, vec3 LD,vec3 halfVector) {
 void main() {
 	vec3 Norm = normalize(fragNorm);
 	vec3 EyeDir = normalize(gubo.eyePos - fragPos);
-	vec3 objectColor = texture(room, fragTexCoord).rgb;
+	vec3 md = texture(room, fragTexCoord).rgb;
 	
 	vec4 Tx = texture(room, fragTexCoord);
 	vec3 LD;	// light direction
@@ -82,7 +82,23 @@ void main() {
 	LD = point_light_dir(fragPos, 0);
 	LC = point_light_color(fragPos, 0);
 	vec3 halfVec= normalize(LD + EyeDir);
-	RendEqSol += BRDF(objectColor, Norm, EyeDir, LD,halfVec) * LC* gubo.lightOn.x;
+	RendEqSol += BRDF(md, Norm, EyeDir, LD,halfVec) * LC* gubo.lightOn.x;
+	// second light
+	LD = point_light_dir(fragPos, 1);
+	LC = point_light_color(fragPos, 1);
+	halfVec= normalize(LD + EyeDir);
+	RendEqSol += BRDF(md, Norm, EyeDir, LD,halfVec) * LC * gubo.lightOn.y;// point light
+	// thirt light
+	LD = point_light_dir(fragPos,2);
+	LC = point_light_color(fragPos,2);
+	halfVec= normalize(LD + EyeDir);
+	RendEqSol += BRDF(md, Norm, EyeDir, LD,halfVec) * LC * gubo.lightOn.z;// point light
+	// Fourth light
+	LD = point_light_dir(fragPos, 3);
+	LC = point_light_color(fragPos, 3);
+	halfVec= normalize(LD + EyeDir);
+	RendEqSol += BRDF(md, Norm, EyeDir, LD,halfVec) * LC * gubo.lightOn.w;// point light
+	//output color
 	outColor = vec4(RendEqSol,1);
 	
 }
