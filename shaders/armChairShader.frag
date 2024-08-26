@@ -13,6 +13,7 @@ layout(set=1,binding = 0) uniform UniformBufferObject {
 
 layout(location = 0) out vec4 outColor;
 
+//texture coming from the application code (initial phase)
 layout(set = 1, binding = 1) uniform sampler2D armChair;
 
 layout(set=0,binding = 0) uniform GlobalUniformBufferObject {

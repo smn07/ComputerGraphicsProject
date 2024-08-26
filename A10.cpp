@@ -88,7 +88,7 @@ class A10 : public BaseProject {
 
 	// Pipelines [Shader couples]
 
-	Pipeline PRoomFrontFace,PRoomRightFace,PRoomLeftFace,PRoomBottomFace,PArmChair,Pbed,PTable,Pkitchen;
+	Pipeline PRoomFrontFace,PRoomRightFace,PRoomLeftFace,PRoomBottomFace,PArmChair,Pbed,PTable,Pkitchen,Pvase,Pfridge,Pmicrowave,Pball,Ptea;
 
 	// Scenes and texts
     TextMaker txt;
@@ -96,9 +96,9 @@ class A10 : public BaseProject {
 	// Models, textures and Descriptor Sets (values assigned to the uniforms)
 	DescriptorSet DSGlobal;
 
-	Model MroomFace, bottomFace, Marmchair, Mbed,Mtable,Mkitchen;
-	Texture Troom,Tbed,TarmChair,Ttable;
-	DescriptorSet DSRoomFrontFace, DSRoomRightFace, DSRoomLeftFace, DSRoomBottomFace, DSArmchair, DSBed,DSTable,DSKitchen;
+	Model MroomFace, bottomFace, Marmchair, Mbed,Mtable,Mkitchen,Mvase,Mfridge,Mmicrowave,Mball,Mtea;
+	Texture Troom,Tbed,TarmChair,Ttable,Tvase;
+	DescriptorSet DSRoomFrontFace, DSRoomRightFace, DSRoomLeftFace, DSRoomBottomFace, DSArmchair, DSBed,DSTable, DSKitchen, DSvase, DSfridge, DSmicrowave, DSball, DStea;
 
 	
 
@@ -123,7 +123,7 @@ class A10 : public BaseProject {
 		// window size, titile and initial background
 		windowWidth = 800;
 		windowHeight = 600;
-		windowTitle = "project";
+		windowTitle = "Graphicsproject";
     	windowResizable = GLFW_TRUE;
 		initialBackgroundColor = { 0.0f, 0.0f, 0.0f, 1.0f };
 		
@@ -151,7 +151,6 @@ class A10 : public BaseProject {
 
 	
 
-
 		// Vertex descriptors
 
 		VDRoom.init(this, {
@@ -176,6 +175,11 @@ class A10 : public BaseProject {
 		Pbed.init(this, &VDRoom, "shaders/bedVert.spv", "shaders/bedFrag.spv", { &DSLGlobal,&DSLRoomFace });
 		PTable.init(this, &VDRoom, "shaders/facesRoomVert.spv", "shaders/bottomFrag.spv", { &DSLGlobal,&DSLRoomFace });
 		Pkitchen.init(this, &VDRoom, "shaders/kitchenVert.spv", "shaders/kitchenFrag.spv", { &DSLGlobal,&DSLRoomFace });
+		Pvase.init(this, &VDRoom, "shaders/vaseVert.spv", "shaders/vaseFrag.spv", { &DSLGlobal,&DSLRoomFace });
+		Pfridge.init(this, &VDRoom, "shaders/fridgeVert.spv", "shaders/fridgeFrag.spv", { &DSLGlobal,&DSLRoomFace });
+		Pmicrowave.init(this, &VDRoom, "shaders/microwaveVert.spv", "shaders/microwaveFrag.spv", { &DSLGlobal,&DSLRoomFace });
+		Pball.init(this, &VDRoom, "shaders/ballVert.spv", "shaders/ballFrag.spv", { &DSLGlobal,&DSLRoomFace });
+		Ptea.init(this, &VDRoom, "shaders/teaVert.spv", "shaders/teaFrag.spv", { &DSLGlobal,&DSLRoomFace });
 
 		// Create models
 
@@ -185,6 +189,11 @@ class A10 : public BaseProject {
 		Mbed.init(this, &VDRoom, "models/Bed.obj", OBJ);
 		Mtable.init(this, &VDRoom, "models/Table.obj", OBJ);
 		Mkitchen.init(this, &VDRoom, "models/kitchen_item_024_Mesh.583.mgcg", MGCG);
+		Mvase.init(this, &VDRoom, "models/Vase.obj", OBJ);
+		Mfridge.init(this, &VDRoom, "models/fridge.mgcg", MGCG);
+		Mmicrowave.init(this, &VDRoom, "models/microwave.mgcg", MGCG);
+		Mball.init(this, &VDRoom, "models/ball.mgcg", MGCG);
+		Mtea.init(this, &VDRoom, "models/tea.mgcg", MGCG);
 		
 		// Create the textures used also for the internal objects
 
@@ -192,14 +201,15 @@ class A10 : public BaseProject {
 		Tbed.init(this, "textures/Bed_texture.png");
 		TarmChair.init(this, "textures/Armchair_Texture.png");
 		Ttable.init(this, "textures/Table_Texture.jpg");
+		Tvase.init(this, "textures/Vase_Texture.jpg");
 		
 
 		// Descriptor pool sizes
 		// WARNING!!!!!!!!
 		// Must be set before initializing the text and the scene
-		DPSZs.uniformBlocksInPool = 50;
-		DPSZs.texturesInPool = 40;
-		DPSZs.setsInPool = 40;
+		DPSZs.uniformBlocksInPool = 60;
+		DPSZs.texturesInPool = 50;
+		DPSZs.setsInPool = 50;
 
 		std::cout << "Initializing text\n";
 		txt.init(this, &outText);
@@ -294,6 +304,11 @@ class A10 : public BaseProject {
 		Pbed.create();
 		PTable.create();
 		Pkitchen.create();
+		Pvase.create();
+		Pfridge.create();
+		Pmicrowave.create();
+		Pball.create();
+		Ptea.create();
 
 		// init the descriptor sets
 		DSRoomRightFace.init(this, &DSLRoomFace, { &Troom });
@@ -304,6 +319,11 @@ class A10 : public BaseProject {
 		DSBed.init(this, &DSLRoomFace, {&Tbed });
 		DSTable.init(this, &DSLRoomFace, {&Ttable });
 		DSKitchen.init(this, &DSLRoomFace, {&Troom });
+		DSvase.init(this, &DSLRoomFace, {&Tvase });
+		DSfridge.init(this, &DSLRoomFace, {&Troom });
+		DSmicrowave.init(this, &DSLRoomFace, {&Troom });
+		DSball.init(this, &DSLRoomFace, {&Troom });
+		DStea.init(this, &DSLRoomFace, {&Troom });
 	
 			
 		DSGlobal.init(this, &DSLGlobal, {});
@@ -327,6 +347,11 @@ class A10 : public BaseProject {
 		Pbed.cleanup();
 		PTable.cleanup();
 		Pkitchen.cleanup();
+		Pvase.cleanup();
+		Pfridge.cleanup();
+		Pmicrowave.cleanup();
+		Pball.cleanup();
+		Ptea.cleanup();
 
 
 		DSRoomRightFace.cleanup();
@@ -337,6 +362,11 @@ class A10 : public BaseProject {
 		DSBed.cleanup();
 		DSTable.cleanup();
 		DSKitchen.cleanup();
+		DSvase.cleanup();
+		DSfridge.cleanup();
+		DSmicrowave.cleanup();
+		DSball.cleanup();
+		DStea.cleanup();
 
 
 		DSGlobal.cleanup();
@@ -355,12 +385,21 @@ class A10 : public BaseProject {
 		Troom.cleanup();
 		Tbed.cleanup();
 		TarmChair.cleanup();
+		Ttable.cleanup();
+		Tvase.cleanup();
+
+		// Cleanup models
 		MroomFace.cleanup();
 		bottomFace.cleanup();
 		Marmchair.cleanup();
 		Mbed.cleanup();
 		Mtable.cleanup();
 		Mkitchen.cleanup();
+		Mvase.cleanup();
+		Mfridge.cleanup();
+		Mmicrowave.cleanup();
+		Mball.cleanup();
+		Mtea.cleanup();
 
 		
 		// Cleanup descriptor set layouts
@@ -380,6 +419,11 @@ class A10 : public BaseProject {
 		Pbed.destroy();
 		PTable.destroy();
 		Pkitchen.destroy();
+		Pvase.destroy();
+		Pfridge.destroy();
+		Pmicrowave.destroy();
+		Pball.destroy();
+		Ptea.destroy();
 
 		txt.localCleanup();		
 	}
@@ -468,6 +512,41 @@ class A10 : public BaseProject {
 		vkCmdDrawIndexed(commandBuffer,
 						static_cast<uint32_t>(Mkitchen.indices.size()), 1, 0, 0, 0);
 
+		Pvase.bind(commandBuffer);
+		Mvase.bind(commandBuffer);
+		DSGlobal.bind(commandBuffer, Pvase, 0, currentImage);
+		DSvase.bind(commandBuffer, Pvase, 1, currentImage);
+		vkCmdDrawIndexed(commandBuffer,
+									static_cast<uint32_t>(Mvase.indices.size()), 1, 0, 0, 0);
+
+		Pfridge.bind(commandBuffer);
+		Mfridge.bind(commandBuffer);
+		DSGlobal.bind(commandBuffer, Pfridge, 0, currentImage);
+		DSfridge.bind(commandBuffer, Pfridge, 1, currentImage);
+		vkCmdDrawIndexed(commandBuffer,
+									static_cast<uint32_t>(Mfridge.indices.size()), 1, 0, 0, 0);
+
+		Pmicrowave.bind(commandBuffer);
+		Mmicrowave.bind(commandBuffer);
+		DSGlobal.bind(commandBuffer, Pmicrowave, 0, currentImage);
+		DSmicrowave.bind(commandBuffer, Pmicrowave, 1, currentImage);
+		vkCmdDrawIndexed(commandBuffer,
+									static_cast<uint32_t>(Mmicrowave.indices.size()), 1, 0, 0, 0);
+
+		Pball.bind(commandBuffer);
+		Mball.bind(commandBuffer);
+		DSGlobal.bind(commandBuffer, Pball, 0, currentImage);
+		DSball.bind(commandBuffer, Pball, 1, currentImage);
+		vkCmdDrawIndexed(commandBuffer,
+									static_cast<uint32_t>(Mball.indices.size()), 1, 0, 0, 0);
+
+		Ptea.bind(commandBuffer);
+		Mtea.bind(commandBuffer);
+		DSGlobal.bind(commandBuffer, Ptea, 0, currentImage);
+		DStea.bind(commandBuffer, Ptea, 1, currentImage);
+		vkCmdDrawIndexed(commandBuffer,
+									static_cast<uint32_t>(Mtea.indices.size()), 1, 0, 0, 0);
+
 		txt.populateCommandBuffer(commandBuffer, currentImage, currScene);
 
 		
@@ -476,6 +555,8 @@ class A10 : public BaseProject {
 	glm::mat4 initialTranslation() {
 		return glm::translate(glm::mat4(1), glm::vec3(0, -5, -15));
 	}
+
+
 	// Here is where you update the uniforms.
 	// Very likely this will be where you will be writing the logic of your application.
 	void updateUniformBuffer(uint32_t currentImage) {
@@ -671,7 +752,7 @@ class A10 : public BaseProject {
 				}*/
 
 
-				// Here is where you actually update your uniforms
+		// Here is where you actually update your uniforms
 		glm::mat4 M = glm::perspective(glm::radians(45.0f), Ar, 0.1f, 50.0f);
 		M[1][1] *= -1;
 
@@ -699,7 +780,7 @@ class A10 : public BaseProject {
 		// objects
 		RoomUniformBufferObject roomFrontFaceUbo{};
 		roomFrontFaceUbo.mMat= glm::translate(glm::mat4(1), glm::vec3(0, 0, -4)) * initialTranslation() * glm::scale(glm::mat4(1), glm::vec3(3, 1, 1)) * baseTr;
-		roomFrontFaceUbo.mvpMat = ViewPrj* roomFrontFaceUbo.mMat;
+		roomFrontFaceUbo.mvpMat = ViewPrj * roomFrontFaceUbo.mMat;
 		roomFrontFaceUbo.nMat = glm::inverse(glm::transpose(roomFrontFaceUbo.mMat));
 		//roomRightFaceUbo.mvpMat = ViewPrj * glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0, 1, 0)) * baseTr;
 		//DSRoomRightFace.map(currentImage, &roomRightFaceUbo, 0);
@@ -753,6 +834,42 @@ class A10 : public BaseProject {
 		kitchenUbo.mvpMat = ViewPrj * kitchenUbo.mMat;
 		kitchenUbo.nMat = glm::inverse(glm::transpose(kitchenUbo.mMat));
 		DSKitchen.map(currentImage, &kitchenUbo, 0);
+
+		//vase
+		RoomUniformBufferObject vaseUbo{};
+		vaseUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(0,1.5,4)) * initialTranslation() * baseTr;
+		vaseUbo.mvpMat = ViewPrj * vaseUbo.mMat;
+		vaseUbo.nMat = glm::inverse(glm::transpose(vaseUbo.mMat));
+		DSvase.map(currentImage, &vaseUbo, 0);
+
+		//fridge
+		RoomUniformBufferObject fridgeUbo{};
+		fridgeUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(-5.5, 0, 1.8)) * initialTranslation() * glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0, 1, 0)) * glm::scale(glm::mat4(1), glm::vec3(1.5, 1.5, 1.5)) * baseTr;
+		fridgeUbo.mvpMat = ViewPrj * fridgeUbo.mMat;
+		fridgeUbo.nMat = glm::inverse(glm::transpose(fridgeUbo.mMat));
+		DSfridge.map(currentImage, &fridgeUbo, 0);
+
+		//microwave
+		RoomUniformBufferObject microwaveUbo{};
+		//microwaveUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(-5.5, 0, 3.5)) * initialTranslation() * glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0, 1, 0)) * glm::scale(glm::mat4(1), glm::vec3(1.5, 1.5, 1.5)) * baseTr;
+		microwaveUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(-5.5, 1.3, -1)) * initialTranslation() * glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0, 1, 0)) * glm::scale(glm::mat4(1), glm::vec3(1.8, 1.8, 1.8)) * baseTr;
+		microwaveUbo.mvpMat = ViewPrj * microwaveUbo.mMat;
+		microwaveUbo.nMat = glm::inverse(glm::transpose(microwaveUbo.mMat));
+		DSmicrowave.map(currentImage, &microwaveUbo, 0);
+
+		//ball
+		RoomUniformBufferObject ballUbo{};
+		ballUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(-4, 0.4, 7)) * initialTranslation() * glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), glm::vec3(0, 1, 0)) * glm::scale(glm::mat4(1), glm::vec3(1, 1, 1)) * baseTr;
+		ballUbo.mvpMat = ViewPrj * ballUbo.mMat;
+		ballUbo.nMat = glm::inverse(glm::transpose(ballUbo.mMat));
+		DSball.map(currentImage, &ballUbo, 0);
+
+		//tea
+		RoomUniformBufferObject teaUbo{};
+		teaUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(-5.5, 1.3, -3)) * initialTranslation() * glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0, 1, 0)) * glm::scale(glm::mat4(1), glm::vec3(2, 2, 2)) * baseTr;
+		teaUbo.mvpMat = ViewPrj * teaUbo.mMat;
+		teaUbo.nMat = glm::inverse(glm::transpose(teaUbo.mMat));
+		DStea.map(currentImage, &teaUbo, 0);
 
 	}
 };
