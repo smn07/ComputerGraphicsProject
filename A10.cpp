@@ -3,6 +3,7 @@
 #include "modules/Starter.hpp"
 #include "modules/TextMaker.hpp"
 #include "Mesh.hpp"
+#include <vector>
 
 
 std::vector<SingleText> outText = {
@@ -68,6 +69,16 @@ struct bedVertex {
 };
 
 */
+
+struct AABB {
+	glm::vec3 min;  // Minimum corner of the AABB
+	glm::vec3 max;  // Maximum corner of the AABB
+
+	// Constructor
+	AABB(const glm::vec3& min_, const glm::vec3& max_)
+		: min(min_), max(max_) {}
+};
+
 const int numLight = 4;
 // MAIN ! 
 class A10 : public BaseProject {
@@ -556,6 +567,15 @@ class A10 : public BaseProject {
 		return glm::translate(glm::mat4(1), glm::vec3(0, -5, -15));
 	}
 
+	// each objects has an invisible HitBox representing its solid state, if two boxes collides (hence you encountered an object) movement should not be allowed
+	bool checkCollision(AABB& box1, AABB& box2) {
+		return (box1.max.x > box2.min.x &&
+			box1.min.x < box2.max.x &&
+			box1.max.y > box2.min.y &&
+			box1.min.y < box2.max.y &&
+			box1.max.z > box2.min.z &&
+			box1.min.z < box2.max.z);
+	}
 
 	// Here is where you update the uniforms.
 	// Very likely this will be where you will be writing the logic of your application.
@@ -589,9 +609,79 @@ class A10 : public BaseProject {
 
 		glm::vec3 ux = glm::rotate(glm::mat4(1.0f), CamAlpha, glm::vec3(0, 1, 0)) * glm::vec4(1, 0, 0, 1);
 		glm::vec3 uz = glm::rotate(glm::mat4(1.0f), CamAlpha, glm::vec3(0, 1, 0)) * glm::vec4(0, 0, 1, 1);
-		CamPos = CamPos + MOVE_SPEED * m.x * ux * deltaT;
-		CamPos = CamPos + MOVE_SPEED * m.y * glm::vec3(0, 1, 0) * deltaT;
-		CamPos = CamPos + MOVE_SPEED * m.z * uz * deltaT;
+
+		// Movement in the camera's local space
+		glm::vec3 moveRight = m.x * ux * MOVE_SPEED * deltaT;
+		glm::vec3 moveUp = m.y * glm::vec3(0, 1, 0) * MOVE_SPEED * deltaT;
+		glm::vec3 moveForward = m.z * uz * MOVE_SPEED * deltaT;
+		// Combine movement vectors
+		glm::vec3 potentialMove = moveRight + moveUp + moveForward;
+		glm::vec3 newCamPos = CamPos + potentialMove;	// Temp variable to check whether the potential movement we are trying to input results in a collision
+		/* DA REVISIONARE : dal momento che non dovremmo poterci muovere su asse y(dato che siamo in modalità walk)
+		rimuovere la possibilità di alzarsi e abbassarsi sulla cordinata y e rimuovere il moveUp da potentialMove*/
+
+		// Hit boxes of objects in the scene
+		std::vector<AABB> objects = {
+			AABB(glm::vec3(-0.6f, -5.7f, -10.95f), glm::vec3(0.8f, -4.7f, -10.8f)),	//table
+			AABB(glm::vec3(0.4f, -5.7f, -18.95f), glm::vec3(1.45f, -4.7f, -16.4f))	//bed
+			// Add more objects as needed
+		};
+		//AABB tableHitBox(glm::vec3(-0.6, -5.7, -10.95), glm::vec3(+0.8, -4.7, -10.8));		
+
+		// Hit box of the camera and of the new camera (after the potential move)
+		AABB camHitBox(glm::vec3(CamPos.x - 1, CamPos.y - 1, CamPos.z - 1), glm::vec3(CamPos.x + 1, CamPos.y + 1, CamPos.z + 1));
+		AABB newcamHitBox(glm::vec3(newCamPos.x - 1, newCamPos.y - 1, newCamPos.z - 1), glm::vec3(newCamPos.x + 1, newCamPos.y + 1, newCamPos.z + 1));
+
+		bool collisionDetected = false;
+		for (AABB& object : objects) {
+			if (checkCollision(newcamHitBox, object)) {
+				collisionDetected = true;
+				break;
+			}
+		}
+
+		if (!collisionDetected) {
+			CamPos = newCamPos;
+		}
+		else {
+			// Handle axis-specific collision
+			bool allowX = true, allowY = true, allowZ = true;
+
+			// Check X-axis (sideways) movement
+			glm::vec3 tempPosX = CamPos + moveRight;
+			AABB tempHitBoxX(glm::vec3(tempPosX.x - 1, tempPosX.y - 1, tempPosX.z - 1), glm::vec3(tempPosX.x + 1, tempPosX.y + 1, tempPosX.z + 1));
+			for (AABB& object : objects) {
+				if (checkCollision(tempHitBoxX, object)) {
+					allowX = false;
+					break;
+				}
+			}
+
+			// Check Y-axis (up/down) movement
+			glm::vec3 tempPosY = CamPos + moveUp;
+			AABB tempHitBoxY(glm::vec3(tempPosY.x - 1, tempPosY.y - 1, tempPosY.z - 1), glm::vec3(tempPosY.x + 1, tempPosY.y + 1, tempPosY.z + 1));
+			for (AABB& object : objects) {
+				if (checkCollision(tempHitBoxY, object)) {
+					allowY = false;
+					break;
+				}
+			}
+
+			// Check Z-axis (forward/backward) movement
+			glm::vec3 tempPosZ = CamPos + moveForward;
+			AABB tempHitBoxZ(glm::vec3(tempPosZ.x - 1, tempPosZ.y - 1, tempPosZ.z - 1), glm::vec3(tempPosZ.x + 1, tempPosZ.y + 1, tempPosZ.z + 1));
+			for (AABB& object : objects) {
+				if (checkCollision(tempHitBoxZ, object)) {
+					allowZ = false;
+					break;
+				}
+			}
+
+			// Apply allowed movement only after checking all objects
+			if (allowX) CamPos += moveRight;
+			if (allowY) CamPos += moveUp;
+			if (allowZ) CamPos += moveForward;
+		}
 
 		static float subpassTimer = 0.0;
 
@@ -816,14 +906,14 @@ class A10 : public BaseProject {
 
 		//bed
 		bedUniformBufferObject bedUbo{};
-		bedUbo.mMat= glm::translate(glm::mat4(1), glm::vec3(1, -0.1, -2.7)) * initialTranslation() * baseTr;
+		bedUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(1, -0.07, -2.7)) * initialTranslation() * baseTr;
 		bedUbo.mvpMat = ViewPrj * bedUbo.mMat;
 		bedUbo.nMat = glm::inverse(glm::transpose(bedUbo.mMat));
 		DSBed.map(currentImage, &bedUbo, 0);
 
 		//table
 		RoomUniformBufferObject tableUbo{};
-		tableUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(0, 0.3, +4))*initialTranslation() * glm::scale(glm::mat4(1), glm::vec3(0.8, 0.8, 0.8)) * baseTr;
+		tableUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(0, 0.4, +4)) * initialTranslation() * glm::scale(glm::mat4(1), glm::vec3(0.8, 0.8, 0.8)) * baseTr;
 		tableUbo.mvpMat = ViewPrj * tableUbo.mMat;
 		tableUbo.nMat = glm::inverse(glm::transpose(tableUbo.mMat));
 		DSTable.map(currentImage, &tableUbo, 0);
@@ -837,7 +927,7 @@ class A10 : public BaseProject {
 
 		//vase
 		RoomUniformBufferObject vaseUbo{};
-		vaseUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(0,1.5,4)) * initialTranslation() * baseTr;
+		vaseUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(0,1.7,4)) * initialTranslation() * baseTr;
 		vaseUbo.mvpMat = ViewPrj * vaseUbo.mMat;
 		vaseUbo.nMat = glm::inverse(glm::transpose(vaseUbo.mMat));
 		DSvase.map(currentImage, &vaseUbo, 0);
