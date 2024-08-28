@@ -21,7 +21,7 @@ std::vector<SingleText> outText = {
 
 enum hitBoxOjects {
 	table, bed, frontWall, leftWall, rightWall, fridge, kitchenLeftWall, kitchenFrontWall, armchair, vase, microwave, tea, 
-	camHitBoxEnum, tv, ball, headphones, camera, coffee, toilet
+	tv, ball, headphones, camera, coffee, toilet, camHitBoxEnum
 };
 
 struct GlobalUniformBufferObject {
@@ -132,7 +132,7 @@ class A10 : public BaseProject {
 	// Pipelines [Shader couples]
 
 	Pipeline PRoomFrontFace,PRoomRightFace,PRoomLeftFace,PRoomBottomFace,PArmChair,Pbed,PTable,Pkitchen,Pvase,Pfridge,
-		Pmicrowave,Pball,Ptea, Ptoilet, Pheadphones, Ptv, Pcoffee, Pcamera, Pchair;
+		Pmicrowave,Pball,Ptea, Ptoilet, Pheadphones, Ptv, Pcoffee, Pcamera, Pchair,Pcursor;
 
 	// Scenes and texts
     TextMaker txt;
@@ -141,10 +141,10 @@ class A10 : public BaseProject {
 	DescriptorSet DSGlobal;
 
 	Model MroomFace, bottomFace, Marmchair, Mbed,Mtable,Mkitchen,Mvase,Mfridge,Mmicrowave,Mball,Mtea, 
-		Mtoilet, Mheadphones, Mtv, Mcoffee, Mcamera, Mchair;
-	Texture Troom,Tbed,TarmChair,Ttable,Tvase;
+		Mtoilet, Mheadphones, Mtv, Mcoffee, Mcamera, Mchair,Mcursor;
+	Texture Troom,Tbed,TarmChair,Ttable,Tvase,Tcursor;
 	DescriptorSet DSRoomFrontFace, DSRoomRightFace, DSRoomLeftFace, DSRoomBottomFace, DSArmchair, DSBed, DSTable, DSKitchen,
-		DSvase, DSfridge, DSmicrowave, DSball, DStea, DStoilet, DSheadphones, DStv, DScoffee, DScamera, DSchair;
+		DSvase, DSfridge, DSmicrowave, DSball, DStea, DStoilet, DSheadphones, DStv, DScoffee, DScamera, DSchair,DScursor;
 
 	
 
@@ -237,7 +237,7 @@ class A10 : public BaseProject {
 		Pcoffee.init(this, &VDRoom, "shaders/coffeeVert.spv", "shaders/coffeeFrag.spv", { &DSLGlobal,&DSLRoomFace });
 		Pchair.init(this, &VDRoom, "shaders/chairVert.spv", "shaders/chairFrag.spv", { &DSLGlobal,&DSLRoomFace });
 		Pcamera.init(this, &VDRoom, "shaders/cameraVert.spv", "shaders/cameraFrag.spv", { &DSLGlobal,&DSLRoomFace });
-
+		Pcursor.init(this, &VDRoom, "shaders/cursorVert.spv", "shaders/cursorFrag.spv", { &DSLRoomFace });
 
 		// Create models
 		MroomFace.init(this, &VDRoom, "models/Walls_009_Plane.003.mgcg", MGCG);
@@ -257,6 +257,7 @@ class A10 : public BaseProject {
 		Mcoffee.init(this, &VDRoom, "models/coffee.mgcg", MGCG);
 		Mcamera.init(this, &VDRoom, "models/camera.mgcg", MGCG);
 		Mchair.init(this, &VDRoom, "models/chair.mgcg", MGCG);
+		Mcursor.init(this, &VDRoom, "models/Sphere.obj", OBJ);
 
 
 
@@ -268,6 +269,7 @@ class A10 : public BaseProject {
 		TarmChair.init(this, "textures/Armchair_Texture.png");
 		Ttable.init(this, "textures/Table_Texture.jpg");
 		Tvase.init(this, "textures/Vase_Texture.jpg");
+		Tcursor.init(this, "textures/Cursor_Texture.png");
 		
 
 		// Descriptor pool sizes
@@ -381,6 +383,7 @@ class A10 : public BaseProject {
 		Pcoffee.create();
 		Pchair.create();
 		Pcamera.create();
+		Pcursor.create();
 
 		// init the descriptor sets
 		DSRoomRightFace.init(this, &DSLRoomFace, { &Troom });
@@ -402,6 +405,7 @@ class A10 : public BaseProject {
 		DSchair.init(this, &DSLRoomFace, { &Troom });
 		DScamera.init(this, &DSLRoomFace, { &Troom });
 		DScoffee.init(this, &DSLRoomFace, { &Troom });
+		DScursor.init(this, &DSLRoomFace, { &Tcursor });
 
 	
 			
@@ -437,6 +441,7 @@ class A10 : public BaseProject {
 		Pcoffee.cleanup();
 		Pchair.cleanup();
 		Pcamera.cleanup();
+		Pcursor.cleanup();
 
 
 
@@ -460,6 +465,7 @@ class A10 : public BaseProject {
 		DScoffee.cleanup();
 		DSchair.cleanup();
 		DScamera.cleanup();
+		DScursor.cleanup();
 
 
 
@@ -481,6 +487,7 @@ class A10 : public BaseProject {
 		TarmChair.cleanup();
 		Ttable.cleanup();
 		Tvase.cleanup();
+		Tcursor.cleanup();
 
 		// Cleanup models
 		MroomFace.cleanup();
@@ -500,6 +507,7 @@ class A10 : public BaseProject {
 		Mchair.cleanup();
 		Mcoffee.cleanup();
 		Mcamera.cleanup();
+		Mcursor.cleanup();
 
 
 		
@@ -532,6 +540,7 @@ class A10 : public BaseProject {
 		Pchair.destroy();
 		Pcoffee.destroy();
 		Pcamera.destroy();
+		Pcursor.destroy();
 
 		txt.localCleanup();		
 	}
@@ -698,6 +707,13 @@ class A10 : public BaseProject {
 		vkCmdDrawIndexed(commandBuffer,
 			static_cast<uint32_t>(Mcoffee.indices.size()), 1, 0, 0, 0);
 
+
+		Pcursor.bind(commandBuffer);
+		Mcursor.bind(commandBuffer);
+		DScursor.bind(commandBuffer, Pcursor, 0, currentImage);
+		vkCmdDrawIndexed(commandBuffer,
+						static_cast<uint32_t>(Mcursor.indices.size()), 1, 0, 0, 0);
+
 		txt.populateCommandBuffer(commandBuffer, currentImage, currScene);
 
 		
@@ -718,6 +734,7 @@ class A10 : public BaseProject {
 	}
 
 	bool rayIntersectsBox(const glm::vec3& rayOrigin, const glm::vec3& rayDirection, const glm::vec3& boxMin, const glm::vec3& boxMax, float& tMin, float& tMax, AABB object) {
+		
 		float t1 = (boxMin.x - rayOrigin.x) / rayDirection.x;
 		float t2 = (boxMax.x - rayOrigin.x) / rayDirection.x;
 		float t3 = (boxMin.y - rayOrigin.y) / rayDirection.y;
@@ -727,7 +744,7 @@ class A10 : public BaseProject {
 
 		tMin = std::max(std::max(std::min(t1, t2), std::min(t3, t4)), std::min(t5, t6));
 		tMax = std::min(std::min(std::max(t1, t2), std::max(t3, t4)), std::max(t5, t6));
-		std::cout << "selected object" << object.object << "tmin: " << tMin << "tMax: " << tMax << "\n";
+		std::cout << "object: " << object.object << " tmin: " << tMin << " tMax: " << tMax << "\n";
 		return tMax >= tMin && tMax > 0.0f;
 	}
 	glm::vec3 screenToWorldRay(int mouseX, int mouseY, const glm::mat4 projection, const glm::mat4 view, int screenWidth, int screenHeight) {
@@ -751,16 +768,17 @@ class A10 : public BaseProject {
 		//printVec4("rayWorld",rayWorld); 
 		//printVec4("rayWorld",rayWorld); 
 		glm::vec3 worldRay = glm::normalize(glm::vec3(rayWorld));
+		//worldRay = glm::vec3(worldRay.x, -worldRay.y, worldRay.z);
 		return worldRay;
 	}
 
 	void onMouseClick(int mouseX, int mouseY, const glm::mat4& projection, const glm::mat4& view, int screenWidth, int screenHeight, std::vector<AABB>objects, glm::vec3 cameraPosition) {
 		glm::vec3 rayOrigin = cameraPosition; // Typically the camera position 
 		glm::vec3 rayDirection = screenToWorldRay(mouseX, mouseY, projection, view, screenWidth, screenHeight);
-		//printVec3("rayDirection",rayDirection); 
-		//printVec3("rayOrigin",rayOrigin); 
+		printVec3("rayDirection",rayDirection); 
+		printVec3("rayOrigin",rayOrigin); 
 		AABB selectedObject;
-		float closestIntersection = FLT_MAX;
+		float closestIntersection = 1000;
 
 		for (int i = 0; i < objects.size(); i++) {
 			AABB object = objects[i];
@@ -832,23 +850,24 @@ class A10 : public BaseProject {
 		// Hit boxes of objects in the scene
 		std::vector<AABB> objectsHitBox = {
 			//AABB(glm::vec3(-0.6f, -6.7f, -10.95f), glm::vec3(0.8f, -4.7f, -10.8f)),		//table
-			AABB(glm::vec3(-1.35f, -5.0f, -11.95f), glm::vec3(1.7f, -3.5f, -9.8f),table), //table 
-			AABB(glm::vec3(0.4f, -6.0f, -18.95f), glm::vec3(1.45f, -4.0f, -16.4f),bed), //bed 
+			AABB(glm::vec3(-1.37f, -5.0f, -11.7f), glm::vec3(1.65f, -3.7f, -10.0f),table), //table object0
+			AABB(glm::vec3(-0.5f, -5.0f, -19.7f), glm::vec3(2.5f, -3.7f, -15.5f),bed),  //bed object1
 			
-			AABB(glm::vec3(-10.0f, -10.0f, -20.0f), glm::vec3(10.0f, 10.0f, -19.0f),frontWall), //frontWall 
-			AABB(glm::vec3(-7.0f, -10.0f, -19.0f), glm::vec3(-6.0f, 10.0f, -7.0f),leftWall),//leftWall 
-			AABB(glm::vec3(6.0f, -10.0f, -19.0f), glm::vec3(7.0f, 10.0f, -7.0f),rightWall), //rightWall 
-			AABB(glm::vec3(-6.0f, -7.0f, -12.6f), glm::vec3(-5.0f, -2.0f, -13.8f),fridge),//fridge 
-			AABB(glm::vec3(-6.0f, -6.0f, -18.0f), glm::vec3(-5.0f, -4.0f, -13.8f),kitchenLeftWall), //kitchen left side wall 
-			AABB(glm::vec3(-6.0f, -6.0f, -19.0f), glm::vec3(0.0f, -4.0f, -18.0f),kitchenFrontWall), //kitchen front side wall 
-			AABB(glm::vec3(5.0f, -4.0f, -13.5f), glm::vec3(6.0f, -6.0f, -12.5f),armchair), //armchair 
-			AABB(glm::vec3(0.0f, -3.6f, -11.0f), glm::vec3(0.3f, -3.0f, -11.5f),vase), //vase 
-			AABB(glm::vec3(-5.8f, -4.0f, -16.3f), glm::vec3(-5.2f, -3.4f, -15.7f),microwave), //microwave 
-			AABB(glm::vec3(-5.7f, -3.9f, -18.2f), glm::vec3(-5.3f, -3.5f, -17.7f),tea), //tea 
+			AABB(glm::vec3(-10.0f, -10.0f, -20.0f), glm::vec3(10.0f, 10.0f, -18.8f),frontWall),   //frontWall object2
+			AABB(glm::vec3(-7.2f, -10.0f, -19.0f), glm::vec3(-5.8f, 10.0f, -7.0f),leftWall),  //leftWall object3
+			AABB(glm::vec3(5.8f, -10.0f, -19.0f), glm::vec3(7.2f, 10.0f, -7.0f),rightWall),   //rightWall object4
+			AABB(glm::vec3(-6.0f, -7.0f, -12.6f), glm::vec3(-5.0f, -2.0f, -13.8f),fridge),//fridge object5
+			AABB(glm::vec3(-6.0f, -6.0f, -18.0f), glm::vec3(-5.0f, -4.0f, -13.8f),kitchenLeftWall), //kitchen left side wall object6
+			AABB(glm::vec3(-7.2f, -5.0f, -19.7f), glm::vec3(2.5f, -3.7f, -15.5f),kitchenFrontWall),  //kitchen front side wall object7
+			AABB(glm::vec3(5.0f, -4.0f, -13.5f), glm::vec3(6.0f, -6.0f, -12.5f),armchair), //armchair object8
+			AABB(glm::vec3(0.0f, -3.6f, -11.0f), glm::vec3(0.3f, -3.0f, -11.5f),vase), //vase object9
+			AABB(glm::vec3(-5.8f, -4.0f, -16.3f), glm::vec3(-5.2f, -3.4f, -15.7f),microwave), //microwave object10
+			AABB(glm::vec3(-5.7f, -3.9f, -18.2f), glm::vec3(-5.3f, -3.5f, -17.7f),tea), //tea object11
 			//NON CORRETTE
-			AABB(glm::vec3(-3.93f, -5.03f, -7.85f), glm::vec3(-3.927f, -5.0f, -7.55f), ball),	//ball
-			AABB(glm::vec3(-1.2f, -5.7f, -7.2f), glm::vec3(1.3f, -3.7f, -7.0f), tv),		//tv
-			AABB(glm::vec3(-1.25f, -4.7f, -10.83f), glm::vec3(-1.2f, -4.4f, -10.82f), camera)	//camera
+			AABB(glm::vec3(-2.1f, -5.0f, -8.0f), glm::vec3(2.0f, -2.3f, -6.5f), tv),//tv object12
+			AABB(glm::vec3(-4.5f, -5.0f, -8.5f), glm::vec3(-3.5f, -4.0f, -6.5f), ball),//ball object13
+			
+			AABB(glm::vec3(-1.2f, -3.7f, -10.9f), glm::vec3(-0.5f, -3.4f, -10.4f),camera)  	//camera object15
 
 		};
 
@@ -856,7 +875,8 @@ class A10 : public BaseProject {
 			 AABB(glm::vec3(5.0f, -4.0f, -13.5f), glm::vec3(6.0f, -6.0f, -12.5f),armchair), //armchair 
 			 AABB(glm::vec3(0.0f, -3.6f, -11.0f), glm::vec3(0.3f, -3.0f, -11.5f),vase), //vase 
 			 AABB(glm::vec3(-5.8f, -4.0f, -16.3f), glm::vec3(-5.2f, -3.4f, -15.7f),microwave), //microwave 
-			 AABB(glm::vec3(-5.7f, -3.9f, -18.2f), glm::vec3(-5.3f, -3.5f, -17.7f),tea) //tea 
+			 AABB(glm::vec3(-5.7f, -3.9f, -18.2f), glm::vec3(-5.3f, -3.5f, -17.7f),tea), //tea 
+			 AABB(glm::vec3(-4.5f, -5.0f, -8.5f), glm::vec3(-3.5f, -4.0f, -6.5f), ball)
 		};
 
 		//[CAMBIA TUTTE LE y CON -10 E 10 UNA VOLTA MODELLATE TUTTE LE HITBOX]
@@ -1239,12 +1259,14 @@ class A10 : public BaseProject {
 		coffeeUbo.nMat = glm::inverse(glm::transpose(coffeeUbo.mMat));
 		DScoffee.map(currentImage, &coffeeUbo, 0);
 
-		double mouseX, mouseY;
-		int width, height; glfwGetWindowSize(window, &width, &height);
-		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) { //std::cout << "mouse pressed\n";
-			glfwGetCursorPos(window, &mouseX, &mouseY); std::cout << "mouseX: " << mouseX << "mouseY: " << mouseY << "\n";
-			onMouseClick(mouseX, mouseY, M, Mv, width, height, objectsHitBoxFocus, CamPos);
-		}
+		//cursor
+		RoomUniformBufferObject cursorUbo{};
+		cursorUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(CamPos.x, CamPos.y, CamPos.z - 2)) * glm::scale(glm::mat4(1), glm::vec3(0.01, 0.01, 0.01)) * baseTr;
+		cursorUbo.mvpMat = ViewPrj  *cursorUbo.mMat;
+		cursorUbo.nMat = glm::inverse(glm::transpose(cursorUbo.mMat));
+		DScursor.map(currentImage, &cursorUbo, 0);
+
+		
 	}
 };
 
