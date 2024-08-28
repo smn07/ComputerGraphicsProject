@@ -858,7 +858,7 @@ class A10 : public BaseProject {
 			AABB(glm::vec3(5.8f, -10.0f, -19.0f), glm::vec3(7.2f, 10.0f, -7.0f),rightWall),   //rightWall object4
 			AABB(glm::vec3(-6.0f, -7.0f, -12.6f), glm::vec3(-5.0f, -2.0f, -13.8f),fridge),//fridge object5
 			AABB(glm::vec3(-6.0f, -6.0f, -18.0f), glm::vec3(-5.0f, -4.0f, -13.8f),kitchenLeftWall), //kitchen left side wall object6
-			AABB(glm::vec3(-7.2f, -5.0f, -19.7f), glm::vec3(2.5f, -3.7f, -15.5f),kitchenFrontWall),  //kitchen front side wall object7
+			AABB(glm::vec3(-7.2f, -5.0f, -19.7f), glm::vec3(2.5f, -3.7f, -15.5f),kitchen),  //kitchen front side wall object7
 			AABB(glm::vec3(5.0f, -4.0f, -13.5f), glm::vec3(6.0f, -6.0f, -12.5f),armchair), //armchair object8
 			AABB(glm::vec3(0.0f, -3.6f, -11.0f), glm::vec3(0.3f, -3.0f, -11.5f),vase), //vase object9
 			AABB(glm::vec3(-5.8f, -4.0f, -16.3f), glm::vec3(-5.2f, -3.4f, -15.7f),microwave), //microwave object10
