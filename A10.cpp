@@ -21,7 +21,7 @@ std::vector<SingleText> outText = {
 
 enum hitBoxOjects {
 	table, bed, frontWall, leftWall, rightWall, fridge, kitchenLeftWall, kitchenFrontWall, armchair, vase, microwave, tea, 
-	tv, ball, headphones, camera, coffee, toilet, camHitBoxEnum
+	tv, ball, headphones, camera, coffee, toilet, camHitBoxEnum, cursor
 };
 
 struct GlobalUniformBufferObject {
@@ -863,6 +863,7 @@ class A10 : public BaseProject {
 			AABB(glm::vec3(0.0f, -3.6f, -11.0f), glm::vec3(0.3f, -3.0f, -11.5f),vase), //vase object9
 			AABB(glm::vec3(-5.8f, -4.0f, -16.3f), glm::vec3(-5.2f, -3.4f, -15.7f),microwave), //microwave object10
 			AABB(glm::vec3(-5.7f, -3.9f, -18.2f), glm::vec3(-5.3f, -3.5f, -17.7f),tea), //tea object11
+
 			//NON CORRETTE
 			AABB(glm::vec3(-2.1f, -5.0f, -8.0f), glm::vec3(2.0f, -2.3f, -6.5f), tv),//tv object12
 			AABB(glm::vec3(-4.5f, -5.0f, -8.5f), glm::vec3(-3.5f, -4.0f, -6.5f), ball),//ball object13
@@ -876,8 +877,9 @@ class A10 : public BaseProject {
 			 AABB(glm::vec3(0.0f, -3.6f, -11.0f), glm::vec3(0.3f, -3.0f, -11.5f),vase), //vase 
 			 AABB(glm::vec3(-5.8f, -4.0f, -16.3f), glm::vec3(-5.2f, -3.4f, -15.7f),microwave), //microwave 
 			 AABB(glm::vec3(-5.7f, -3.9f, -18.2f), glm::vec3(-5.3f, -3.5f, -17.7f),tea), //tea 
-			 AABB(glm::vec3(-4.5f, -5.0f, -8.5f), glm::vec3(-3.5f, -4.0f, -6.5f), ball)
+			 AABB(glm::vec3(-4.5f, -5.0f, -8.5f), glm::vec3(-3.5f, -4.0f, -6.5f), ball) //ball
 		};
+
 
 		//[CAMBIA TUTTE LE y CON -10 E 10 UNA VOLTA MODELLATE TUTTE LE HITBOX]
 	
@@ -1261,15 +1263,34 @@ class A10 : public BaseProject {
 
 		//cursor
 		RoomUniformBufferObject cursorUbo{};
-		glm::vec3 cameraForward = -glm::vec3(Mv[2][0], Mv[2][1], Mv[2][2]);
-		glm::vec3 objectPosition = CamPos + cameraForward * 1.0f;
-		cursorUbo.mMat = glm::translate(glm::mat4(1.0f), objectPosition);
+
+		//cameraForward: Calcoli la direzione "frontale" della telecamera estraendo la terza colonna della matrice di vista (Mv),
+		// e invertendo il segno. Questo ti dà la direzione in cui la telecamera sta guardando nello spazio mondo.
+		glm::vec3 cameraForward = -glm::vec3(Mv[0][2], Mv[1][2], Mv[2][2]);
+		glm::vec3 objectPosition = CamPos + cameraForward * 2.0f;
+		cursorUbo.mMat = glm::translate(glm::mat4(1.0f), objectPosition) * glm::scale(glm::mat4(1), glm::vec3(0.01, 0.01, 0.01)) * baseTr;
 
 		//cursorUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(CamPos.x, CamPos.y, CamPos.z - 2)) * glm::scale(glm::mat4(1), glm::vec3(0.01, 0.01, 0.01)) * baseTr;
 		cursorUbo.mvpMat = ViewPrj  *cursorUbo.mMat;
 		cursorUbo.nMat = glm::inverse(glm::transpose(cursorUbo.mMat));
 		DScursor.map(currentImage, &cursorUbo, 0);
 
+
+
+
+
+		//code for object focus (intersection)
+		//hit box cursor
+		AABB cursorHitBox(glm::vec3(objectPosition.x-0.2f, objectPosition.y-0.2f, objectPosition.z + 0.2f), glm::vec3(objectPosition.x + 0.2f, objectPosition.y + 0.2f, objectPosition.z + 0.2f), cursor);
+		//check collission with all the object hitbox and camera
+		for (AABB& object : objectsHitBoxFocus) {
+			if (checkCollision(cursorHitBox, object)) {
+				//if there is a collision, the object is focused
+				//print the object name with which the camera is colliding
+				std::cout << "Object focused: " << object.object << "\n";
+				break;
+			}
+		}
 		
 	}
 };
