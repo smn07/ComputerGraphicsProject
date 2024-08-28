@@ -1261,7 +1261,11 @@ class A10 : public BaseProject {
 
 		//cursor
 		RoomUniformBufferObject cursorUbo{};
-		cursorUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(CamPos.x, CamPos.y, CamPos.z - 2)) * glm::scale(glm::mat4(1), glm::vec3(0.01, 0.01, 0.01)) * baseTr;
+		glm::vec3 cameraForward = -glm::vec3(Mv[2][0], Mv[2][1], Mv[2][2]);
+		glm::vec3 objectPosition = CamPos + cameraForward * 1.0f;
+		cursorUbo.mMat = glm::translate(glm::mat4(1.0f), objectPosition);
+
+		//cursorUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(CamPos.x, CamPos.y, CamPos.z - 2)) * glm::scale(glm::mat4(1), glm::vec3(0.01, 0.01, 0.01)) * baseTr;
 		cursorUbo.mvpMat = ViewPrj  *cursorUbo.mMat;
 		cursorUbo.nMat = glm::inverse(glm::transpose(cursorUbo.mMat));
 		DScursor.map(currentImage, &cursorUbo, 0);
