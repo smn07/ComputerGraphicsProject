@@ -5,6 +5,8 @@
 #include "Mesh.hpp"
 #include <vector>
 
+int numberObject = -1;
+bool all = true;
 
 std::vector<SingleText> outText = {
 	{2, {"Adding an object", "Press SPACE to save the screenshots","",""}, 0, 0},
@@ -550,163 +552,185 @@ class A10 : public BaseProject {
 	// with their buffers and textures
 	
 	void populateCommandBuffer(VkCommandBuffer commandBuffer, int currentImage) {
-		
+
 		//armchair
-		Marmchair.bind(commandBuffer);
-		PArmChair.bind(commandBuffer);
-		DSArmchair.bind(commandBuffer, PArmChair, 1, currentImage);
-		DSGlobal.bind(commandBuffer, PArmChair, 0, currentImage);
-		vkCmdDrawIndexed(commandBuffer,
-			static_cast<uint32_t>(Marmchair.indices.size()), 1, 0, 0, 0);
+		if (all || numberObject == 8) {
+			Marmchair.bind(commandBuffer);
+			PArmChair.bind(commandBuffer);
+			DSArmchair.bind(commandBuffer, PArmChair, 1, currentImage);
+			DSGlobal.bind(commandBuffer, PArmChair, 0, currentImage);
+			vkCmdDrawIndexed(commandBuffer,
+				static_cast<uint32_t>(Marmchair.indices.size()), 1, 0, 0, 0);
+		}
 
 		//bed
-		Mbed.bind(commandBuffer);
-		Pbed.bind(commandBuffer);
-		DSGlobal.bind(commandBuffer, Pbed, 0, currentImage);
-		DSBed.bind(commandBuffer, Pbed, 1, currentImage);
-		vkCmdDrawIndexed(commandBuffer,
-			static_cast<uint32_t>(Mbed.indices.size()), 1, 0, 0, 0);
-		// binds the pipeline
+		if (all) {
+			Mbed.bind(commandBuffer);
+			Pbed.bind(commandBuffer);
+			DSGlobal.bind(commandBuffer, Pbed, 0, currentImage);
+			DSBed.bind(commandBuffer, Pbed, 1, currentImage);
+			vkCmdDrawIndexed(commandBuffer,
+				static_cast<uint32_t>(Mbed.indices.size()), 1, 0, 0, 0);
+		}
 
-		PRoomFrontFace.bind(commandBuffer);
-		
-		// The models (both index and vertex buffers)
-
-		MroomFace.bind(commandBuffer);
-		//bottomFace.bind(commandBuffer);
-		
-		// The descriptor sets, for each descriptor set specified in the pipeline
-		//DSGlobalFrontFace.bind(commandBuffer, PRoomFrontFace, 0, currentImage);	// The Global Descriptor Set (Set 0)
-		
-		
-		DSRoomFrontFace.bind(commandBuffer, PRoomFrontFace, 1, currentImage);	// The Room Descriptor Set (Set 1)
-		DSGlobal.bind(commandBuffer, PRoomFrontFace, 0, currentImage);
-					
-		// The actual draw call.
-		vkCmdDrawIndexed(commandBuffer,
-				static_cast<uint32_t>(MroomFace.indices.size()), 1, 0, 0, 0);	
-
-		// binds the pipeline
-		PRoomRightFace.bind(commandBuffer);
-
-		// The models (both index and vertex buffers)
-		//Msun.bind(commandBuffer);
-
-		// The descriptor sets, for each descriptor set specified in the pipeline
-		DSRoomRightFace.bind(commandBuffer, PRoomRightFace, 1, currentImage);
-		DSGlobal.bind(commandBuffer, PRoomRightFace, 0, currentImage);
-		// The actual draw call.
-		vkCmdDrawIndexed(commandBuffer,
-			static_cast<uint32_t>(MroomFace.indices.size()), 1, 0, 0, 0);
-
-		PRoomLeftFace.bind(commandBuffer);
-		DSRoomLeftFace.bind(commandBuffer, PRoomLeftFace, 1, currentImage);
-		DSGlobal.bind(commandBuffer, PRoomLeftFace, 0, currentImage);
-		// The actual draw call.
-		vkCmdDrawIndexed(commandBuffer,
-			static_cast<uint32_t>(MroomFace.indices.size()), 1, 0, 0, 0);
+		if (all) {
+			PRoomFrontFace.bind(commandBuffer);
+			MroomFace.bind(commandBuffer);
+			DSRoomFrontFace.bind(commandBuffer, PRoomFrontFace, 1, currentImage);	// The Room Descriptor Set (Set 1)
+			DSGlobal.bind(commandBuffer, PRoomFrontFace, 0, currentImage);	// The Global Descriptor Set (Set 0)
+			vkCmdDrawIndexed(commandBuffer,
+				static_cast<uint32_t>(MroomFace.indices.size()), 1, 0, 0, 0);
+		}
 
 
-		//l'idea è di fare il binding del modello sempre a ridosso del binding della pipeline.
-		bottomFace.bind(commandBuffer);
+		if (all) {
+			PRoomRightFace.bind(commandBuffer);
+			DSRoomRightFace.bind(commandBuffer, PRoomRightFace, 1, currentImage);
+			DSGlobal.bind(commandBuffer, PRoomRightFace, 0, currentImage);
+			vkCmdDrawIndexed(commandBuffer,
+				static_cast<uint32_t>(MroomFace.indices.size()), 1, 0, 0, 0);
+		}
 
-		PRoomBottomFace.bind(commandBuffer);
-		DSRoomBottomFace.bind(commandBuffer, PRoomBottomFace, 1, currentImage);
-		DSGlobal.bind(commandBuffer, PRoomBottomFace, 0, currentImage);
-		// The actual draw call.
-		vkCmdDrawIndexed(commandBuffer,
-			static_cast<uint32_t>(bottomFace.indices.size()), 1, 0, 0, 0);
-		PTable.bind(commandBuffer);
-		Mtable.bind(commandBuffer);
-		DSGlobal.bind(commandBuffer, PTable, 0, currentImage);
-		DSTable.bind(commandBuffer, PTable, 1, currentImage);
-		vkCmdDrawIndexed(commandBuffer,
-						static_cast<uint32_t>(Mtable.indices.size()), 1, 0, 0, 0);
-		
-		Pkitchen.bind(commandBuffer);
-		Mkitchen.bind(commandBuffer);
-		DSGlobal.bind(commandBuffer, Pkitchen, 0, currentImage);
-		DSKitchen.bind(commandBuffer, Pkitchen, 1, currentImage);
-		vkCmdDrawIndexed(commandBuffer,
-						static_cast<uint32_t>(Mkitchen.indices.size()), 1, 0, 0, 0);
+		if (all) {
+			PRoomLeftFace.bind(commandBuffer);
+			DSRoomLeftFace.bind(commandBuffer, PRoomLeftFace, 1, currentImage);
+			DSGlobal.bind(commandBuffer, PRoomLeftFace, 0, currentImage);
+			vkCmdDrawIndexed(commandBuffer,
+				static_cast<uint32_t>(MroomFace.indices.size()), 1, 0, 0, 0);
+		}
 
-		Pvase.bind(commandBuffer);
-		Mvase.bind(commandBuffer);
-		DSGlobal.bind(commandBuffer, Pvase, 0, currentImage);
-		DSvase.bind(commandBuffer, Pvase, 1, currentImage);
-		vkCmdDrawIndexed(commandBuffer,
-									static_cast<uint32_t>(Mvase.indices.size()), 1, 0, 0, 0);
 
-		Pfridge.bind(commandBuffer);
-		Mfridge.bind(commandBuffer);
-		DSGlobal.bind(commandBuffer, Pfridge, 0, currentImage);
-		DSfridge.bind(commandBuffer, Pfridge, 1, currentImage);
-		vkCmdDrawIndexed(commandBuffer,
-									static_cast<uint32_t>(Mfridge.indices.size()), 1, 0, 0, 0);
 
-		Pmicrowave.bind(commandBuffer);
-		Mmicrowave.bind(commandBuffer);
-		DSGlobal.bind(commandBuffer, Pmicrowave, 0, currentImage);
-		DSmicrowave.bind(commandBuffer, Pmicrowave, 1, currentImage);
-		vkCmdDrawIndexed(commandBuffer,
-									static_cast<uint32_t>(Mmicrowave.indices.size()), 1, 0, 0, 0);
+		if (all) {
+			bottomFace.bind(commandBuffer);
+			PRoomBottomFace.bind(commandBuffer);
+			DSRoomBottomFace.bind(commandBuffer, PRoomBottomFace, 1, currentImage);
+			DSGlobal.bind(commandBuffer, PRoomBottomFace, 0, currentImage);
 
-		Pball.bind(commandBuffer);
-		Mball.bind(commandBuffer);
-		DSGlobal.bind(commandBuffer, Pball, 0, currentImage);
-		DSball.bind(commandBuffer, Pball, 1, currentImage);
-		vkCmdDrawIndexed(commandBuffer,
-									static_cast<uint32_t>(Mball.indices.size()), 1, 0, 0, 0);
+			vkCmdDrawIndexed(commandBuffer,
+				static_cast<uint32_t>(bottomFace.indices.size()), 1, 0, 0, 0);
 
-		Ptea.bind(commandBuffer);
-		Mtea.bind(commandBuffer);
-		DSGlobal.bind(commandBuffer, Ptea, 0, currentImage);
-		DStea.bind(commandBuffer, Ptea, 1, currentImage);
-		vkCmdDrawIndexed(commandBuffer,
-									static_cast<uint32_t>(Mtea.indices.size()), 1, 0, 0, 0);
+		}
 
-		Ptoilet.bind(commandBuffer);
-		Mtoilet.bind(commandBuffer);
-		DSGlobal.bind(commandBuffer, Ptoilet, 0, currentImage);
-		DStoilet.bind(commandBuffer, Ptoilet, 1, currentImage);
-		vkCmdDrawIndexed(commandBuffer,
-			static_cast<uint32_t>(Mtoilet.indices.size()), 1, 0, 0, 0);
+		if (all) {
+			PTable.bind(commandBuffer);
+			Mtable.bind(commandBuffer);
+			DSGlobal.bind(commandBuffer, PTable, 0, currentImage);
+			DSTable.bind(commandBuffer, PTable, 1, currentImage);
+			vkCmdDrawIndexed(commandBuffer,
+				static_cast<uint32_t>(Mtable.indices.size()), 1, 0, 0, 0);
+		}
 
-		Pheadphones.bind(commandBuffer);
-		Mheadphones.bind(commandBuffer);
-		DSGlobal.bind(commandBuffer, Pheadphones, 0, currentImage);
-		DSheadphones.bind(commandBuffer, Pheadphones, 1, currentImage);
-		vkCmdDrawIndexed(commandBuffer,
-			static_cast<uint32_t>(Mheadphones.indices.size()), 1, 0, 0, 0);
-		
-		Ptv.bind(commandBuffer);
-		Mtv.bind(commandBuffer);
-		DSGlobal.bind(commandBuffer, Ptv, 0, currentImage);
-		DStv.bind(commandBuffer, Ptv, 1, currentImage);
-		vkCmdDrawIndexed(commandBuffer,
-			static_cast<uint32_t>(Mtv.indices.size()), 1, 0, 0, 0);
+		if (all) {
+			Pkitchen.bind(commandBuffer);
+			Mkitchen.bind(commandBuffer);
+			DSGlobal.bind(commandBuffer, Pkitchen, 0, currentImage);
+			DSKitchen.bind(commandBuffer, Pkitchen, 1, currentImage);
+			vkCmdDrawIndexed(commandBuffer,
+				static_cast<uint32_t>(Mkitchen.indices.size()), 1, 0, 0, 0);
+		}
 
-		Pchair.bind(commandBuffer);
-		Mchair.bind(commandBuffer);
-		DSGlobal.bind(commandBuffer, Pchair, 0, currentImage);
-		DSchair.bind(commandBuffer, Pchair, 1, currentImage);
-		vkCmdDrawIndexed(commandBuffer,
-			static_cast<uint32_t>(Mchair.indices.size()), 1, 0, 0, 0);
+		if (all || numberObject == 9) {
+			Pvase.bind(commandBuffer);
+			Mvase.bind(commandBuffer);
+			DSGlobal.bind(commandBuffer, Pvase, 0, currentImage);
+			DSvase.bind(commandBuffer, Pvase, 1, currentImage);
+			vkCmdDrawIndexed(commandBuffer,
+				static_cast<uint32_t>(Mvase.indices.size()), 1, 0, 0, 0);
+		}
 
-		Pcamera.bind(commandBuffer);
-		Mcamera.bind(commandBuffer);
-		DSGlobal.bind(commandBuffer, Pcamera, 0, currentImage);
-		DScamera.bind(commandBuffer, Pcamera, 1, currentImage);
-		vkCmdDrawIndexed(commandBuffer,
-			static_cast<uint32_t>(Mcamera.indices.size()), 1, 0, 0, 0);
+		if (all) {
 
-		Pcoffee.bind(commandBuffer);
-		Mcoffee.bind(commandBuffer);
-		DSGlobal.bind(commandBuffer, Pcoffee, 0, currentImage);
-		DScoffee.bind(commandBuffer, Pcoffee, 1, currentImage);
-		vkCmdDrawIndexed(commandBuffer,
-			static_cast<uint32_t>(Mcoffee.indices.size()), 1, 0, 0, 0);
+			Pfridge.bind(commandBuffer);
+			Mfridge.bind(commandBuffer);
+			DSGlobal.bind(commandBuffer, Pfridge, 0, currentImage);
+			DSfridge.bind(commandBuffer, Pfridge, 1, currentImage);
+			vkCmdDrawIndexed(commandBuffer,
+				static_cast<uint32_t>(Mfridge.indices.size()), 1, 0, 0, 0);
+		}
 
+		if (all || numberObject == 10) {
+			Pmicrowave.bind(commandBuffer);
+			Mmicrowave.bind(commandBuffer);
+			DSGlobal.bind(commandBuffer, Pmicrowave, 0, currentImage);
+			DSmicrowave.bind(commandBuffer, Pmicrowave, 1, currentImage);
+			vkCmdDrawIndexed(commandBuffer,
+				static_cast<uint32_t>(Mmicrowave.indices.size()), 1, 0, 0, 0);
+		}
+
+
+		if (all || numberObject == 13) {
+
+			Pball.bind(commandBuffer);
+			Mball.bind(commandBuffer);
+			DSGlobal.bind(commandBuffer, Pball, 0, currentImage);
+			DSball.bind(commandBuffer, Pball, 1, currentImage);
+			vkCmdDrawIndexed(commandBuffer,
+				static_cast<uint32_t>(Mball.indices.size()), 1, 0, 0, 0);
+		}
+
+		if (all || numberObject == 11) {
+			Ptea.bind(commandBuffer);
+			Mtea.bind(commandBuffer);
+			DSGlobal.bind(commandBuffer, Ptea, 0, currentImage);
+			DStea.bind(commandBuffer, Ptea, 1, currentImage);
+			vkCmdDrawIndexed(commandBuffer,
+				static_cast<uint32_t>(Mtea.indices.size()), 1, 0, 0, 0);
+		}
+
+		if (all || numberObject == 17) {
+			Ptoilet.bind(commandBuffer);
+			Mtoilet.bind(commandBuffer);
+			DSGlobal.bind(commandBuffer, Ptoilet, 0, currentImage);
+			DStoilet.bind(commandBuffer, Ptoilet, 1, currentImage);
+			vkCmdDrawIndexed(commandBuffer,
+				static_cast<uint32_t>(Mtoilet.indices.size()), 1, 0, 0, 0);
+		}
+
+		if (all || numberObject == 14) {
+			Pheadphones.bind(commandBuffer);
+			Mheadphones.bind(commandBuffer);
+			DSGlobal.bind(commandBuffer, Pheadphones, 0, currentImage);
+			DSheadphones.bind(commandBuffer, Pheadphones, 1, currentImage);
+			vkCmdDrawIndexed(commandBuffer,
+				static_cast<uint32_t>(Mheadphones.indices.size()), 1, 0, 0, 0);
+		}
+
+		if (all || numberObject == 12) {
+			Ptv.bind(commandBuffer);
+			Mtv.bind(commandBuffer);
+			DSGlobal.bind(commandBuffer, Ptv, 0, currentImage);
+			DStv.bind(commandBuffer, Ptv, 1, currentImage);
+			vkCmdDrawIndexed(commandBuffer,
+				static_cast<uint32_t>(Mtv.indices.size()), 1, 0, 0, 0);
+		}
+
+		if (all) {
+			Pchair.bind(commandBuffer);
+			Mchair.bind(commandBuffer);
+			DSGlobal.bind(commandBuffer, Pchair, 0, currentImage);
+			DSchair.bind(commandBuffer, Pchair, 1, currentImage);
+			vkCmdDrawIndexed(commandBuffer,
+				static_cast<uint32_t>(Mchair.indices.size()), 1, 0, 0, 0);
+		}
+
+		if (all || numberObject == 15) {
+			Pcamera.bind(commandBuffer);
+			Mcamera.bind(commandBuffer);
+			DSGlobal.bind(commandBuffer, Pcamera, 0, currentImage);
+			DScamera.bind(commandBuffer, Pcamera, 1, currentImage);
+			vkCmdDrawIndexed(commandBuffer,
+				static_cast<uint32_t>(Mcamera.indices.size()), 1, 0, 0, 0);
+		}
+
+		if (all || numberObject == 16) {
+			Pcoffee.bind(commandBuffer);
+			Mcoffee.bind(commandBuffer);
+			DSGlobal.bind(commandBuffer, Pcoffee, 0, currentImage);
+			DScoffee.bind(commandBuffer, Pcoffee, 1, currentImage);
+			vkCmdDrawIndexed(commandBuffer,
+				static_cast<uint32_t>(Mcoffee.indices.size()), 1, 0, 0, 0);
+		}
 
 		Pcursor.bind(commandBuffer);
 		Mcursor.bind(commandBuffer);
@@ -733,20 +757,7 @@ class A10 : public BaseProject {
 			box1.min.z < box2.max.z);
 	}
 
-	bool rayIntersectsBox(const glm::vec3& rayOrigin, const glm::vec3& rayDirection, const glm::vec3& boxMin, const glm::vec3& boxMax, float& tMin, float& tMax, AABB object) {
-		
-		float t1 = (boxMin.x - rayOrigin.x) / rayDirection.x;
-		float t2 = (boxMax.x - rayOrigin.x) / rayDirection.x;
-		float t3 = (boxMin.y - rayOrigin.y) / rayDirection.y;
-		float t4 = (boxMax.y - rayOrigin.y) / rayDirection.y;
-		float t5 = (boxMin.z - rayOrigin.z) / rayDirection.z;
-		float t6 = (boxMax.z - rayOrigin.z) / rayDirection.z;
 
-		tMin = std::max(std::max(std::min(t1, t2), std::min(t3, t4)), std::min(t5, t6));
-		tMax = std::min(std::min(std::max(t1, t2), std::max(t3, t4)), std::max(t5, t6));
-		std::cout << "object: " << object.object << " tmin: " << tMin << " tMax: " << tMax << "\n";
-		return tMax >= tMin && tMax > 0.0f;
-	}
 	glm::vec3 screenToWorldRay(int mouseX, int mouseY, const glm::mat4 projection, const glm::mat4 view, int screenWidth, int screenHeight) {
 		// Convert to normalized device coordinates 
 		float x = (2.0f * mouseX) / (screenWidth - 1) - 1.0f;
@@ -770,37 +781,6 @@ class A10 : public BaseProject {
 		glm::vec3 worldRay = glm::normalize(glm::vec3(rayWorld));
 		//worldRay = glm::vec3(worldRay.x, -worldRay.y, worldRay.z);
 		return worldRay;
-	}
-
-	void onMouseClick(int mouseX, int mouseY, const glm::mat4& projection, const glm::mat4& view, int screenWidth, int screenHeight, std::vector<AABB>objects, glm::vec3 cameraPosition) {
-		glm::vec3 rayOrigin = cameraPosition; // Typically the camera position 
-		glm::vec3 rayDirection = screenToWorldRay(mouseX, mouseY, projection, view, screenWidth, screenHeight);
-		printVec3("rayDirection",rayDirection); 
-		printVec3("rayOrigin",rayOrigin); 
-		AABB selectedObject;
-		float closestIntersection = 1000;
-
-		for (int i = 0; i < objects.size(); i++) {
-			AABB object = objects[i];
-			float tMin, tMax;
-
-			if (rayIntersectsBox(rayOrigin, rayDirection, object.min, object.max, tMin, tMax, object)) {
-				//std::cout << "selected object: " << object.object << "tmin: "<<tMin << "\n"; 
-				if (tMin < closestIntersection) {
-					closestIntersection = tMin;
-					selectedObject = object;
-					selectedObject.setSelection(true);
-
-				}
-			}
-		}
-
-		if (selectedObject.isSelected()) {
-			// Object is selected, apply logic like highlighting or moving 
-			std::cout << "selected object" << selectedObject.object << "\n";
-			selectedObject.setSelection(false);
-		}
-
 	}
 
 	// Here is where you update the uniforms.
@@ -849,35 +829,41 @@ class A10 : public BaseProject {
 
 		// Hit boxes of objects in the scene
 		std::vector<AABB> objectsHitBox = {
-			//AABB(glm::vec3(-0.6f, -6.7f, -10.95f), glm::vec3(0.8f, -4.7f, -10.8f)),		//table
-			AABB(glm::vec3(-1.37f, -5.0f, -11.7f), glm::vec3(1.65f, -3.7f, -10.0f),table), //table object0
-			AABB(glm::vec3(-0.5f, -5.0f, -19.7f), glm::vec3(2.5f, -3.7f, -15.5f),bed),  //bed object1
-			
-			AABB(glm::vec3(-10.0f, -10.0f, -20.0f), glm::vec3(10.0f, 10.0f, -18.8f),frontWall),   //frontWall object2
-			AABB(glm::vec3(-7.2f, -10.0f, -19.0f), glm::vec3(-5.8f, 10.0f, -7.0f),leftWall),  //leftWall object3
-			AABB(glm::vec3(5.8f, -10.0f, -19.0f), glm::vec3(7.2f, 10.0f, -7.0f),rightWall),   //rightWall object4
-			AABB(glm::vec3(-6.0f, -7.0f, -12.6f), glm::vec3(-5.0f, -2.0f, -13.8f),fridge),//fridge object5
-			AABB(glm::vec3(-6.0f, -6.0f, -18.0f), glm::vec3(-5.0f, -4.0f, -13.8f),kitchenLeftWall), //kitchen left side wall object6
-			AABB(glm::vec3(-7.2f, -5.0f, -19.7f), glm::vec3(2.5f, -3.7f, -15.5f),kitchenFrontWall),  //kitchen front side wall object7
-			AABB(glm::vec3(5.0f, -4.0f, -13.5f), glm::vec3(6.0f, -6.0f, -12.5f),armchair), //armchair object8
-			AABB(glm::vec3(0.0f, -3.6f, -11.0f), glm::vec3(0.3f, -3.0f, -11.5f),vase), //vase object9
-			AABB(glm::vec3(-5.8f, -4.0f, -16.3f), glm::vec3(-5.2f, -3.4f, -15.7f),microwave), //microwave object10
-			AABB(glm::vec3(-5.7f, -3.9f, -18.2f), glm::vec3(-5.3f, -3.5f, -17.7f),tea), //tea object11
+			//AABB(glm::vec3(-0.6f, -6.7f, -10.95f), glm::vec3(0.8f, -4.7f, -10.8f)),  //table 
+			AABB(glm::vec3(-1.37f, -5.0f, -11.7f), glm::vec3(1.65f, -3.65f, -10.0f),table), //table object0 
+			AABB(glm::vec3(-0.5f, -5.0f, -19.7f), glm::vec3(2.5f, -3.7f, -15.5f),bed),  //bed object1 
 
-			//NON CORRETTE
-			AABB(glm::vec3(-2.1f, -5.0f, -8.0f), glm::vec3(2.0f, -2.3f, -6.5f), tv),//tv object12
-			AABB(glm::vec3(-4.5f, -5.0f, -8.5f), glm::vec3(-3.5f, -4.0f, -6.5f), ball),//ball object13
-			
-			AABB(glm::vec3(-1.2f, -3.7f, -10.9f), glm::vec3(-0.5f, -3.4f, -10.4f),camera)  	//camera object15
+			AABB(glm::vec3(-10.0f, -10.0f, -20.0f), glm::vec3(10.0f, 10.0f, -18.8f),frontWall),   //frontWall object2 
+			AABB(glm::vec3(-7.2f, -10.0f, -19.0f), glm::vec3(-5.8f, 10.0f, -7.0f),leftWall),  //leftWall object3 
+			AABB(glm::vec3(5.8f, -10.0f, -19.0f), glm::vec3(7.2f, 10.0f, -7.0f),rightWall),   //rightWall object4 
+			AABB(glm::vec3(-6.0f, -7.0f, -12.6f), glm::vec3(-5.0f, -2.0f, -13.8f),fridge),//fridge object5 
+			AABB(glm::vec3(-6.0f, -6.0f, -18.0f), glm::vec3(-5.0f, -4.0f, -13.8f),kitchenLeftWall), //kitchen left side wall object6 
+			AABB(glm::vec3(-7.2f, -5.0f, -19.7f), glm::vec3(2.5f, -3.7f, -15.5f),kitchenFrontWall),  //kitchen front side wall object7 
+			AABB(glm::vec3(4.0f, -5.0f, -13.8f), glm::vec3(6.0f, -3.0f, -12.0f),armchair), //armchair object8 
+			AABB(glm::vec3(-0.3f, -3.6f, -11.0f), glm::vec3(0.3f, -3.0f, -10.5f),vase), //vase object9 
+			AABB(glm::vec3(-5.8f, -4.0f, -16.3f), glm::vec3(-5.2f, -3.4f, -15.7f),microwave), //microwave object10 
+			AABB(glm::vec3(-5.7f, -3.9f, -18.2f), glm::vec3(-5.3f, -3.5f, -17.7f),tea), //tea object11 
+			AABB(glm::vec3(-2.1f, -5.0f, -8.0f), glm::vec3(2.0f, -2.3f, -6.5f), tv),//tv object12 
+			AABB(glm::vec3(-4.5f, -5.0f, -8.5f), glm::vec3(-3.5f, -4.0f, -6.5f), ball),//ball object13 
+
+			AABB(glm::vec3(-1.2f, -3.7f, -10.9f), glm::vec3(-0.5f, -3.4f, -10.4f),camera),//camera object15t 
+			AABB(glm::vec3(3.6f, -5.0f, -18.7f), glm::vec3(4.4f, -3.0f, -17.5f),toilet), //toile object17 
+			AABB(glm::vec3(1.0f, -3.65f, -10.4f), glm::vec3(1.2f, -3.4f, -10.2f),headphones), //headphones  
+			AABB(glm::vec3(-1.7f, -4.0f, -18.5f), glm::vec3(-1.2f, -3.0f, -17.8f),coffee), //coffe machine  
+
 
 		};
 
 		std::vector<AABB> objectsHitBoxFocus = {
-			 AABB(glm::vec3(5.0f, -4.0f, -13.5f), glm::vec3(6.0f, -6.0f, -12.5f),armchair), //armchair 
-			 AABB(glm::vec3(0.0f, -3.6f, -11.0f), glm::vec3(0.3f, -3.0f, -11.5f),vase), //vase 
-			 AABB(glm::vec3(-5.8f, -4.0f, -16.3f), glm::vec3(-5.2f, -3.4f, -15.7f),microwave), //microwave 
-			 AABB(glm::vec3(-5.7f, -3.9f, -18.2f), glm::vec3(-5.3f, -3.5f, -17.7f),tea), //tea 
-			 AABB(glm::vec3(-4.5f, -5.0f, -8.5f), glm::vec3(-3.5f, -4.0f, -6.5f), ball) //ball
+		  AABB(glm::vec3(4.0f, -5.0f, -13.8f), glm::vec3(6.0f, -3.0f, -12.0f),armchair), //armchair object8 
+		  AABB(glm::vec3(-0.3f, -3.6f, -11.0f), glm::vec3(0.3f, -3.0f, -10.5f),vase), //vase object9 
+		  AABB(glm::vec3(-5.8f, -4.0f, -16.3f), glm::vec3(-5.2f, -3.4f, -15.7f),microwave), //microwave object 10 
+		  AABB(glm::vec3(-5.7f, -3.9f, -18.2f), glm::vec3(-5.3f, -3.5f, -17.7f),tea), //tea object11 
+		  AABB(glm::vec3(-4.5f, -5.0f, -8.5f), glm::vec3(-3.5f, -4.0f, -6.5f), ball), //ball object13 
+		  AABB(glm::vec3(1.0f, -3.65f, -10.4f), glm::vec3(1.2f, -3.4f, -10.2f),headphones), //headphones  
+		  AABB(glm::vec3(-1.2f, -3.7f, -10.8f), glm::vec3(-0.5f, -3.4f, -10.4f),camera),//camera object15 
+		 AABB(glm::vec3(-1.7f, -10.0f, -18.5f), glm::vec3(-1.2f, 10.0f, -17.8f),coffee), //coffe machine  
+
 		};
 
 
@@ -940,7 +926,7 @@ class A10 : public BaseProject {
 
 		static float subpassTimer = 0.0;
 
-		if (glfwGetKey(window, GLFW_KEY_SPACE)) {
+		/*if (glfwGetKey(window, GLFW_KEY_SPACE)) {
 			if (!debounce) {
 				debounce = true;
 				curDebounce = GLFW_KEY_SPACE;
@@ -964,7 +950,7 @@ class A10 : public BaseProject {
 				curDebounce = 0;
 			}
 		}
-
+		*/
 		// Standard procedure to quit when the ESC key is pressed
 		if (glfwGetKey(window, GLFW_KEY_ESCAPE)) {
 			glfwSetWindowShouldClose(window, GL_TRUE);
@@ -1275,10 +1261,6 @@ class A10 : public BaseProject {
 		cursorUbo.nMat = glm::inverse(glm::transpose(cursorUbo.mMat));
 		DScursor.map(currentImage, &cursorUbo, 0);
 
-
-
-
-
 		//code for object focus (intersection)
 		//hit box cursor
 		AABB cursorHitBox(glm::vec3(objectPosition.x-0.2f, objectPosition.y-0.2f, objectPosition.z + 0.2f), glm::vec3(objectPosition.x + 0.2f, objectPosition.y + 0.2f, objectPosition.z + 0.2f), cursor);
@@ -1287,10 +1269,56 @@ class A10 : public BaseProject {
 			if (checkCollision(cursorHitBox, object)) {
 				//if there is a collision, the object is focused
 				//print the object name with which the camera is colliding
-				std::cout << "Object focused: " << object.object << "\n";
+				//std::cout << "Object focused: " << object.object << "\n";
+				
+				//if the user has clicked SPACE, the object is selected and the camera is moved to the object by seeing only the object with a zoom
+
+				if (glfwGetKey(window, GLFW_KEY_SPACE)) {
+					if (!debounce) {
+						debounce = true;
+						curDebounce = GLFW_KEY_SPACE;
+						numberObject = object.object;
+						all = false;
+
+						std::cout << "Object selected: " << object.object << "\n";
+
+						RebuildPipeline();
+
+					}
+				}
+				else {
+					if ((curDebounce == GLFW_KEY_SPACE) && debounce) {
+						debounce = false;
+						curDebounce = 0;
+					}
+				}
+
+
 				break;
 			}
 		}
+
+		//Press F8 to reset the camera to the initial position
+
+		if (glfwGetKey(window, GLFW_KEY_F8)) {
+			if (!debounce) {
+				debounce = true;
+				curDebounce = GLFW_KEY_F8;
+				all = true;
+
+				std::cout << "PREMUTO F8: \n";
+
+				RebuildPipeline();
+
+			}
+		}
+		else {
+			if ((curDebounce == GLFW_KEY_F8) && debounce) {
+				debounce = false;
+				curDebounce = 0;
+			}
+		}
+		
 		
 	}
 };
