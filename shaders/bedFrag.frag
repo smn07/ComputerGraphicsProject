@@ -9,6 +9,7 @@ layout(set=1,binding = 0) uniform UniformBufferObject {
 	mat4 mvpMat;
 	mat4 mMat;
 	mat4 nMat;
+	int selected;
 } ubo;
 
 layout(location = 0) out vec4 outColor;
