@@ -850,7 +850,7 @@ class A10 : public BaseProject {
 		// Hit boxes of objects in the scene
 		std::vector<AABB> objectsHitBox = {
 			//AABB(glm::vec3(-0.6f, -6.7f, -10.95f), glm::vec3(0.8f, -4.7f, -10.8f)),		//table
-			AABB(glm::vec3(-1.37f, -5.0f, -11.7f), glm::vec3(1.65f, -3.7f, -10.0f),table), //table object0
+			AABB(glm::vec3(-1.37f, -5.0f, -11.7f), glm::vec3(1.65f, -3.65f, -10.0f),table), //table object0
 			AABB(glm::vec3(-0.5f, -5.0f, -19.7f), glm::vec3(2.5f, -3.7f, -15.5f),bed),  //bed object1
 			
 			AABB(glm::vec3(-10.0f, -10.0f, -20.0f), glm::vec3(10.0f, 10.0f, -18.8f),frontWall),   //frontWall object2
@@ -858,26 +858,33 @@ class A10 : public BaseProject {
 			AABB(glm::vec3(5.8f, -10.0f, -19.0f), glm::vec3(7.2f, 10.0f, -7.0f),rightWall),   //rightWall object4
 			AABB(glm::vec3(-6.0f, -7.0f, -12.6f), glm::vec3(-5.0f, -2.0f, -13.8f),fridge),//fridge object5
 			AABB(glm::vec3(-6.0f, -6.0f, -18.0f), glm::vec3(-5.0f, -4.0f, -13.8f),kitchenLeftWall), //kitchen left side wall object6
-			AABB(glm::vec3(-7.2f, -5.0f, -19.7f), glm::vec3(2.5f, -3.7f, -15.5f),kitchen),  //kitchen front side wall object7
-			AABB(glm::vec3(5.0f, -4.0f, -13.5f), glm::vec3(6.0f, -6.0f, -12.5f),armchair), //armchair object8
-			AABB(glm::vec3(0.0f, -3.6f, -11.0f), glm::vec3(0.3f, -3.0f, -11.5f),vase), //vase object9
+			AABB(glm::vec3(-7.2f, -5.0f, -19.7f), glm::vec3(2.5f, -3.7f, -15.5f),kitchenFrontWall),  //kitchen front side wall object7
+			AABB(glm::vec3(4.0f, -5.0f, -13.8f), glm::vec3(6.0f, -3.0f, -12.0f),armchair), //armchair object8
+			AABB(glm::vec3(-0.3f, -3.6f, -11.0f), glm::vec3(0.3f, -3.0f, -10.5f),vase), //vase object9
 			AABB(glm::vec3(-5.8f, -4.0f, -16.3f), glm::vec3(-5.2f, -3.4f, -15.7f),microwave), //microwave object10
 			AABB(glm::vec3(-5.7f, -3.9f, -18.2f), glm::vec3(-5.3f, -3.5f, -17.7f),tea), //tea object11
-
 			//NON CORRETTE
 			AABB(glm::vec3(-2.1f, -5.0f, -8.0f), glm::vec3(2.0f, -2.3f, -6.5f), tv),//tv object12
 			AABB(glm::vec3(-4.5f, -5.0f, -8.5f), glm::vec3(-3.5f, -4.0f, -6.5f), ball),//ball object13
 			
-			AABB(glm::vec3(-1.2f, -3.7f, -10.9f), glm::vec3(-0.5f, -3.4f, -10.4f),camera)  	//camera object15
+			AABB(glm::vec3(-1.2f, -3.7f, -10.9f), glm::vec3(-0.5f, -3.4f, -10.4f),camera),//camera object15t
+			AABB(glm::vec3(3.6f, -5.0f, -18.7f), glm::vec3(4.4f, -3.0f, -17.5f),toilet), //toile object17
+			AABB(glm::vec3(1.0f, -3.65f, -10.4f), glm::vec3(1.2f, -3.4f, -10.2f),headphones), //headphones 
+			AABB(glm::vec3(-1.7f, -4.0f, -18.5f), glm::vec3(-1.2f, -3.0f, -17.8f),coffee), //coffe machine 
+
 
 		};
 
 		std::vector<AABB> objectsHitBoxFocus = {
-			 AABB(glm::vec3(5.0f, -4.0f, -13.5f), glm::vec3(6.0f, -6.0f, -12.5f),armchair), //armchair 
-			 AABB(glm::vec3(0.0f, -3.6f, -11.0f), glm::vec3(0.3f, -3.0f, -11.5f),vase), //vase 
-			 AABB(glm::vec3(-5.8f, -4.0f, -16.3f), glm::vec3(-5.2f, -3.4f, -15.7f),microwave), //microwave 
-			 AABB(glm::vec3(-5.7f, -3.9f, -18.2f), glm::vec3(-5.3f, -3.5f, -17.7f),tea), //tea 
-			 AABB(glm::vec3(-4.5f, -5.0f, -8.5f), glm::vec3(-3.5f, -4.0f, -6.5f), ball) //ball
+			 AABB(glm::vec3(4.0f, -5.0f, -13.8f), glm::vec3(6.0f, -3.0f, -12.0f),armchair), //armchair object8
+			 AABB(glm::vec3(-0.3f, -3.6f, -11.0f), glm::vec3(0.3f, -3.0f, -10.5f),vase), //vase object9
+			 AABB(glm::vec3(-5.8f, -4.0f, -16.3f), glm::vec3(-5.2f, -3.4f, -15.7f),microwave), //microwave object 10
+			 AABB(glm::vec3(-5.7f, -3.9f, -18.2f), glm::vec3(-5.3f, -3.5f, -17.7f),tea), //tea object11
+			 AABB(glm::vec3(-4.5f, -5.0f, -8.5f), glm::vec3(-3.5f, -4.0f, -6.5f), ball), //ball object13
+			 AABB(glm::vec3(1.0f, -3.65f, -10.4f), glm::vec3(1.2f, -3.4f, -10.2f),headphones), //headphones 
+			 AABB(glm::vec3(-1.2f, -3.7f, -10.8f), glm::vec3(-0.5f, -3.4f, -10.4f),camera),//camera object15
+			AABB(glm::vec3(-1.7f, -10.0f, -18.5f), glm::vec3(-1.2f, 10.0f, -17.8f),coffee), //coffe machine 
+
 		};
 
 
@@ -1123,6 +1130,7 @@ class A10 : public BaseProject {
 		DSGlobal.map(currentImage, &gubo, 0);
 
 		// objects
+		//ROOM FRONT FACE
 		RoomUniformBufferObject roomFrontFaceUbo{};
 		roomFrontFaceUbo.mMat= glm::translate(glm::mat4(1), glm::vec3(0, 0, -4)) * initialTranslation() * glm::scale(glm::mat4(1), glm::vec3(3, 1, 1)) * baseTr;
 		roomFrontFaceUbo.mvpMat = ViewPrj * roomFrontFaceUbo.mMat;
@@ -1130,20 +1138,20 @@ class A10 : public BaseProject {
 		//roomRightFaceUbo.mvpMat = ViewPrj * glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0, 1, 0)) * baseTr;
 		//DSRoomRightFace.map(currentImage, &roomRightFaceUbo, 0);
 		DSRoomFrontFace.map(currentImage, &roomFrontFaceUbo, 0);
-
+		//ROOM RIGHT FACE
 		RoomUniformBufferObject roomRightFaceUbo{};
 		roomRightFaceUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(6, 0, 2)) * initialTranslation() * glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0, 1, 0)) * glm::scale(glm::mat4(1), glm::vec3(3, 1, 1)) * baseTr;
 		roomRightFaceUbo.mvpMat = ViewPrj* roomRightFaceUbo.mMat;
 		roomRightFaceUbo.nMat = glm::inverse(glm::transpose(roomRightFaceUbo.mMat));
 		DSRoomRightFace.map(currentImage, &roomRightFaceUbo, 0);
-
+		//ROOM LEFT FACE
 		RoomUniformBufferObject roomLeftFaceUbo{};
 		roomLeftFaceUbo.mMat=glm::translate(glm::mat4(1), glm::vec3(-6, 0, 2))* initialTranslation()* glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(0, 1, 0))* glm::scale(glm::mat4(1), glm::vec3(3, 1, 1))* baseTr;
 		roomLeftFaceUbo.mvpMat = ViewPrj * roomLeftFaceUbo.mMat;
 		roomLeftFaceUbo.nMat = glm::inverse(glm::transpose(roomLeftFaceUbo.mMat));
 
 		DSRoomLeftFace.map(currentImage, &roomLeftFaceUbo, 0);
-
+		//ROOM BOTTON FACE
 		RoomUniformBufferObject roomBottomFaceUbo{};
 		roomBottomFaceUbo.mMat= glm::translate(glm::mat4(1), glm::vec3(0, 0, +2)) * initialTranslation() * glm::scale(glm::mat4(1), glm::vec3(3, 1, 3)) * baseTr;
 		//roomBottomFaceUbo.mvpMat = ViewPrj * glm::translate(glm::mat4(1), glm::vec3(0, 0, -4)) *initialTranslation()* glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1, 0, 0)) * glm::scale(glm::mat4(1), glm::vec3(3, 3, 1)) * baseTr;
