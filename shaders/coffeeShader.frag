@@ -17,9 +17,9 @@ layout(location = 0) out vec4 outColor;
 layout(set = 1, binding = 1) uniform sampler2D room;
 
 layout(set=0,binding = 0) uniform GlobalUniformBufferObject {
-	vec3 lightDir[5];
-	vec3 lightPos[5];
-	vec4 lightColor[5];
+	vec3 lightDir[4];
+	vec3 lightPos[4];
+	vec4 lightColor[4];
 	vec3 eyePos;
 	vec4 lightOn;
 	//float cosIn;
