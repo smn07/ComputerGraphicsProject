@@ -8,52 +8,51 @@
 int numberObject = -1;
 bool all = true;
 
+glm::vec3 oldCamPos = glm::vec3(0.0, 0.0, 0.0);
+float oldCamAlpha = 0.0f;//cam rotation
+float oldCamBeta = 0.0f;//cam rotation
+
 std::vector<SingleText> outText = {
 	{2, {"Adding an object", "Press SPACE to save the screenshots","",""}, 0, 0},
 	{1, {"Saving Screenshots. Please wait.", "", "",""}, 0, 0}
 };
-
-
-
-
-// The uniform buffer object used in this example
-//#define NSHIP 16
-
-// The uniform buffer object used in this example//#define NSHIP 16
 
 enum hitBoxOjects {
 	table, bed, frontWall, leftWall, rightWall, fridge, kitchenLeftWall, kitchenFrontWall, armchair, vase, microwave, tea, 
 	tv, ball, headphones, camera, coffee, toilet, camHitBoxEnum, cursor
 };
 
+
 struct GlobalUniformBufferObject {
-	alignas(16) glm::vec3 lightDir[4];
-	alignas(16) glm::vec3 lightPos[4];
-	alignas(16) glm::vec4 lightColor[4];
+	alignas(16) glm::vec3 lightDir[5];
+	alignas(16) glm::vec3 lightPos[5];
+	alignas(16) glm::vec4 lightColor[5];
 	alignas(16) glm::vec3 eyePos;
 	alignas(16) glm::vec4 lightOn;
+	alignas(4) float cosIn;
+	alignas(4) float cosOut;
 };
-
 
 
 struct RoomUniformBufferObject {
 	alignas(16) glm::mat4 mvpMat;
 	alignas(16) glm::mat4 mMat;
 	alignas(16) glm::mat4 nMat;
+	alignas(4) bool selected;
 };
-
 //for the armchair
 struct armchairUniformBufferObject {
 	alignas(16) glm::mat4 mvpMat;
 	alignas(16) glm::mat4 mMat;
 	alignas(16) glm::mat4 nMat;
+	alignas(4) bool selected;
 };
-
 //for the bed
 struct bedUniformBufferObject {
 	alignas(16) glm::mat4 mvpMat;
 	alignas(16) glm::mat4 mMat;
 	alignas(16) glm::mat4 nMat;
+	alignas(4) bool selected;
 };
 
 //for the Blinn parameters (headphones)
@@ -112,7 +111,7 @@ bool isSelected() {
 }
 };
 
-const int numLight = 4;
+const int numLight = 5;
 // MAIN ! 
 class A10 : public BaseProject {
 	protected:
@@ -351,6 +350,7 @@ class A10 : public BaseProject {
 				LInt[i] = ld[i]["intensity"];
 				std::cout << LInt[i] << "\n\n";
 			}
+			ScosIn = cos((float)ld[4]["spot"]["innerConeAngle"]); ScosOut = cos((float)ld[4]["spot"]["outerConeAngle"]);
 			
 		}
 		catch (const nlohmann::json::exception& e) {
@@ -553,7 +553,6 @@ class A10 : public BaseProject {
 	
 	void populateCommandBuffer(VkCommandBuffer commandBuffer, int currentImage) {
 
-		//armchair
 		if (all || numberObject == 8) {
 			Marmchair.bind(commandBuffer);
 			PArmChair.bind(commandBuffer);
@@ -563,7 +562,6 @@ class A10 : public BaseProject {
 				static_cast<uint32_t>(Marmchair.indices.size()), 1, 0, 0, 0);
 		}
 
-		//bed
 		if (all) {
 			Mbed.bind(commandBuffer);
 			Pbed.bind(commandBuffer);
@@ -573,44 +571,42 @@ class A10 : public BaseProject {
 				static_cast<uint32_t>(Mbed.indices.size()), 1, 0, 0, 0);
 		}
 
-		if (all) {
-			PRoomFrontFace.bind(commandBuffer);
-			MroomFace.bind(commandBuffer);
-			DSRoomFrontFace.bind(commandBuffer, PRoomFrontFace, 1, currentImage);	// The Room Descriptor Set (Set 1)
-			DSGlobal.bind(commandBuffer, PRoomFrontFace, 0, currentImage);	// The Global Descriptor Set (Set 0)
-			vkCmdDrawIndexed(commandBuffer,
+
+		PRoomFrontFace.bind(commandBuffer);
+		MroomFace.bind(commandBuffer);
+		DSRoomFrontFace.bind(commandBuffer, PRoomFrontFace, 1, currentImage);	// The Room Descriptor Set (Set 1)
+		DSGlobal.bind(commandBuffer, PRoomFrontFace, 0, currentImage);	// The Global Descriptor Set (Set 0)
+		vkCmdDrawIndexed(commandBuffer,
+					static_cast<uint32_t>(MroomFace.indices.size()), 1, 0, 0, 0);
+
+
+	
+		PRoomRightFace.bind(commandBuffer);
+		DSRoomRightFace.bind(commandBuffer, PRoomRightFace, 1, currentImage);
+		DSGlobal.bind(commandBuffer, PRoomRightFace, 0, currentImage);
+		vkCmdDrawIndexed(commandBuffer,
 				static_cast<uint32_t>(MroomFace.indices.size()), 1, 0, 0, 0);
-		}
 
 
-		if (all) {
-			PRoomRightFace.bind(commandBuffer);
-			DSRoomRightFace.bind(commandBuffer, PRoomRightFace, 1, currentImage);
-			DSGlobal.bind(commandBuffer, PRoomRightFace, 0, currentImage);
-			vkCmdDrawIndexed(commandBuffer,
+
+		PRoomLeftFace.bind(commandBuffer);
+		DSRoomLeftFace.bind(commandBuffer, PRoomLeftFace, 1, currentImage);
+		DSGlobal.bind(commandBuffer, PRoomLeftFace, 0, currentImage);
+		vkCmdDrawIndexed(commandBuffer,
 				static_cast<uint32_t>(MroomFace.indices.size()), 1, 0, 0, 0);
-		}
-
-		if (all) {
-			PRoomLeftFace.bind(commandBuffer);
-			DSRoomLeftFace.bind(commandBuffer, PRoomLeftFace, 1, currentImage);
-			DSGlobal.bind(commandBuffer, PRoomLeftFace, 0, currentImage);
-			vkCmdDrawIndexed(commandBuffer,
-				static_cast<uint32_t>(MroomFace.indices.size()), 1, 0, 0, 0);
-		}
 
 
 
-		if (all) {
-			bottomFace.bind(commandBuffer);
-			PRoomBottomFace.bind(commandBuffer);
-			DSRoomBottomFace.bind(commandBuffer, PRoomBottomFace, 1, currentImage);
-			DSGlobal.bind(commandBuffer, PRoomBottomFace, 0, currentImage);
 
-			vkCmdDrawIndexed(commandBuffer,
+
+		bottomFace.bind(commandBuffer);
+		PRoomBottomFace.bind(commandBuffer);
+		DSRoomBottomFace.bind(commandBuffer, PRoomBottomFace, 1, currentImage);
+		DSGlobal.bind(commandBuffer, PRoomBottomFace, 0, currentImage);
+
+		vkCmdDrawIndexed(commandBuffer,
 				static_cast<uint32_t>(bottomFace.indices.size()), 1, 0, 0, 0);
 
-		}
 
 		if (all) {
 			PTable.bind(commandBuffer);
@@ -732,13 +728,16 @@ class A10 : public BaseProject {
 				static_cast<uint32_t>(Mcoffee.indices.size()), 1, 0, 0, 0);
 		}
 
-		Pcursor.bind(commandBuffer);
-		Mcursor.bind(commandBuffer);
-		DScursor.bind(commandBuffer, Pcursor, 0, currentImage);
-		vkCmdDrawIndexed(commandBuffer,
-						static_cast<uint32_t>(Mcursor.indices.size()), 1, 0, 0, 0);
+		if(numberObject == -1) {
+			Pcursor.bind(commandBuffer);
+			Mcursor.bind(commandBuffer);
+			DScursor.bind(commandBuffer, Pcursor, 0, currentImage);
+			vkCmdDrawIndexed(commandBuffer,
+				static_cast<uint32_t>(Mcursor.indices.size()), 1, 0, 0, 0);
 
-		txt.populateCommandBuffer(commandBuffer, currentImage, currScene);
+			txt.populateCommandBuffer(commandBuffer, currentImage, currScene);
+		
+		}
 
 		
 	}
@@ -757,31 +756,6 @@ class A10 : public BaseProject {
 			box1.min.z < box2.max.z);
 	}
 
-
-	glm::vec3 screenToWorldRay(int mouseX, int mouseY, const glm::mat4 projection, const glm::mat4 view, int screenWidth, int screenHeight) {
-		// Convert to normalized device coordinates 
-		float x = (2.0f * mouseX) / (screenWidth - 1) - 1.0f;
-		float y = 1.0f - (2.0f * mouseY) / (screenHeight - 1); // Invert y-axis 
-		float z = 1.0f; // Assume ray pointing into the screen 
-
-		glm::vec4 rayNDC(x, y, z, 1.0f);
-		//printVec4("rayNDC",rayNDC); 
-		// Convert NDC to clip space 
-		glm::vec4 rayClip = rayNDC;
-
-		// Convert clip space to view space 
-		glm::vec4 rayEye = glm::inverse(projection) * rayClip;
-		rayEye = glm::vec4(rayEye.x, rayEye.y, -1.0f, 0.0f); // We need a direction, so w=0 
-		//printVec4("rayEye",rayEye); 
-		// Convert view space to world space 
-		glm::vec4 rayWorld = glm::inverse(view) * rayEye;
-		//glm::vec3 worldRay = glm::normalize(glm::vec3(rayWorld)); 
-		//printVec4("rayWorld",rayWorld); 
-		//printVec4("rayWorld",rayWorld); 
-		glm::vec3 worldRay = glm::normalize(glm::vec3(rayWorld));
-		//worldRay = glm::vec3(worldRay.x, -worldRay.y, worldRay.z);
-		return worldRay;
-	}
 
 	// Here is where you update the uniforms.
 	// Very likely this will be where you will be writing the logic of your application.
@@ -1101,6 +1075,8 @@ class A10 : public BaseProject {
 		GlobalUniformBufferObject gubo{};
 		gubo.eyePos = CamPos;
 		gubo.lightOn = lightOn;
+		gubo.cosIn = ScosIn;
+		gubo.cosOut = ScosOut;
 		for (int i = 0; i < numLight; i++) {
 			gubo.lightColor[i] = glm::vec4(LCol[i], LInt[i]);
 			gubo.lightDir[i] = LWm[i] * glm::vec4(0, 0, 1, 0);// direction taken by multiplying the vector (0,0,1) by the light world matrix, we just need the Z component direction
@@ -1140,7 +1116,12 @@ class A10 : public BaseProject {
 
 		//armchair
 		armchairUniformBufferObject armchairUbo{};
-		armchairUbo.mMat= glm::translate(glm::mat4(1), glm::vec3(5, 0.35, 2)) * initialTranslation() * glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(0, 1, 0))* glm::scale(glm::mat4(1), glm::vec3(0.7, 0.7, 0.7)) * baseTr;
+		if (numberObject == 8) {
+			armchairUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(0, 2, 1)) * initialTranslation() * glm::scale(glm::mat4(1), glm::vec3(1, 1, 1)) * baseTr;
+		}
+		else {
+			armchairUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(5, 0.35, 2)) * initialTranslation() * glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(0, 1, 0)) * glm::scale(glm::mat4(1), glm::vec3(0.7, 0.7, 0.7)) * baseTr;
+		}
 		armchairUbo.mvpMat = ViewPrj * armchairUbo.mMat;
 		armchairUbo.nMat = glm::inverse(glm::transpose(armchairUbo.mMat));
 		DSArmchair.map(currentImage, &armchairUbo, 0);
@@ -1168,7 +1149,12 @@ class A10 : public BaseProject {
 
 		//vase
 		RoomUniformBufferObject vaseUbo{};
-		vaseUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(0,1.7,4)) * initialTranslation() * baseTr;
+		if (numberObject == 9) {
+			vaseUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(0, 2, 1)) * initialTranslation() * glm::scale(glm::mat4(1), glm::vec3(2, 2, 2)) * baseTr;
+		}
+		else {
+			vaseUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(0, 1.7, 4)) * initialTranslation() * baseTr;
+		}
 		vaseUbo.mvpMat = ViewPrj * vaseUbo.mMat;
 		vaseUbo.nMat = glm::inverse(glm::transpose(vaseUbo.mMat));
 		DSvase.map(currentImage, &vaseUbo, 0);
@@ -1182,22 +1168,36 @@ class A10 : public BaseProject {
 
 		//microwave
 		RoomUniformBufferObject microwaveUbo{};
-		//microwaveUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(-5.5, 0, 3.5)) * initialTranslation() * glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0, 1, 0)) * glm::scale(glm::mat4(1), glm::vec3(1.5, 1.5, 1.5)) * baseTr;
-		microwaveUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(-5.5, 1.3, -1)) * initialTranslation() * glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0, 1, 0)) * glm::scale(glm::mat4(1), glm::vec3(1.8, 1.8, 1.8)) * baseTr;
+		if (numberObject == 10) {
+			microwaveUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(0, 2, 1)) * initialTranslation() * glm::scale(glm::mat4(1), glm::vec3(5, 5, 5)) * baseTr;
+		}
+		else {
+			microwaveUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(-5.5, 1.3, -1)) * initialTranslation() * glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0, 1, 0)) * glm::scale(glm::mat4(1), glm::vec3(1.8, 1.8, 1.8)) * baseTr;
+		}
 		microwaveUbo.mvpMat = ViewPrj * microwaveUbo.mMat;
 		microwaveUbo.nMat = glm::inverse(glm::transpose(microwaveUbo.mMat));
 		DSmicrowave.map(currentImage, &microwaveUbo, 0);
 
 		//ball
 		RoomUniformBufferObject ballUbo{};
-		ballUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(-4, 0.4, 7)) * initialTranslation() * glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), glm::vec3(0, 1, 0)) * glm::scale(glm::mat4(1), glm::vec3(1, 1, 1)) * baseTr;
+		if (numberObject == 13) {
+			ballUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(0, 2, 1)) * initialTranslation() * glm::scale(glm::mat4(1), glm::vec3(3, 3, 3)) * baseTr;
+		}
+		else {
+			ballUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(-4, 0.4, 7)) * initialTranslation() * glm::rotate(glm::mat4(1.0f), glm::radians(0.0f), glm::vec3(0, 1, 0)) * glm::scale(glm::mat4(1), glm::vec3(1, 1, 1)) * baseTr;
+		}
 		ballUbo.mvpMat = ViewPrj * ballUbo.mMat;
 		ballUbo.nMat = glm::inverse(glm::transpose(ballUbo.mMat));
 		DSball.map(currentImage, &ballUbo, 0);
 
 		//tea
 		RoomUniformBufferObject teaUbo{};
-		teaUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(-5.5, 1.3, -3)) * initialTranslation() * glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0, 1, 0)) * glm::scale(glm::mat4(1), glm::vec3(2, 2, 2)) * baseTr;
+		if (numberObject == 11) {
+			teaUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(0, 2, 1)) * initialTranslation() * glm::scale(glm::mat4(1), glm::vec3(6, 6, 6)) * baseTr;
+		}
+		else {
+			teaUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(-5.5, 1.3, -3)) * initialTranslation() * glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0, 1, 0)) * glm::scale(glm::mat4(1), glm::vec3(2, 2, 2)) * baseTr;
+		}
 		teaUbo.mvpMat = ViewPrj * teaUbo.mMat;
 		teaUbo.nMat = glm::inverse(glm::transpose(teaUbo.mMat));
 		DStea.map(currentImage, &teaUbo, 0);
@@ -1211,7 +1211,12 @@ class A10 : public BaseProject {
 
 		//headphones
 		RoomUniformBufferObject headphoneUbo{};
-		headphoneUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(1.2f, 1.365f, 4.5f)) * initialTranslation() * glm::rotate(glm::mat4(1.0f), glm::radians(45.0f), glm::vec3(0, 1, 0)) * glm::rotate(glm::mat4(1.0f), glm::radians(-13.0f), glm::vec3(1, 0, 0)) * glm::scale(glm::mat4(1), glm::vec3(2, 2, 2)) * baseTr;
+		if (numberObject == 14) {
+			headphoneUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(0, 2, 1)) * initialTranslation() * glm::scale(glm::mat4(1), glm::vec3(6, 6, 6)) * baseTr;
+		}
+		else {
+			headphoneUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(1.2f, 1.365f, 4.5f)) * initialTranslation() * glm::rotate(glm::mat4(1.0f), glm::radians(45.0f), glm::vec3(0, 1, 0)) * glm::rotate(glm::mat4(1.0f), glm::radians(-13.0f), glm::vec3(1, 0, 0)) * glm::scale(glm::mat4(1), glm::vec3(2, 2, 2)) * baseTr;
+		}
 		headphoneUbo.mvpMat = ViewPrj * headphoneUbo.mMat;
 		headphoneUbo.nMat = glm::inverse(glm::transpose(headphoneUbo.mMat));
 		DSheadphones.map(currentImage, &headphoneUbo, 0);
@@ -1235,14 +1240,24 @@ class A10 : public BaseProject {
 
 		//camera
 		RoomUniformBufferObject cameraUbo{};
-		cameraUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(-0.8, 1.3, 4.3)) * initialTranslation() * glm::rotate(glm::mat4(1.0f), glm::radians(-45.0f), glm::vec3(0, 1, 0)) * glm::scale(glm::mat4(1), glm::vec3(2.5, 2.5, 2.5)) * baseTr;
+		if (numberObject == 15) {
+			cameraUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(0, 2, 1)) * initialTranslation() * glm::scale(glm::mat4(1), glm::vec3(6, 6, 6)) * baseTr;
+		}
+		else {
+			cameraUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(-0.8, 1.3, 4.3)) * initialTranslation() * glm::rotate(glm::mat4(1.0f), glm::radians(-45.0f), glm::vec3(0, 1, 0)) * glm::scale(glm::mat4(1), glm::vec3(2.5, 2.5, 2.5)) * baseTr;
+		}
 		cameraUbo.mvpMat = ViewPrj * cameraUbo.mMat;
 		cameraUbo.nMat = glm::inverse(glm::transpose(cameraUbo.mMat));
 		DScamera.map(currentImage, &cameraUbo, 0);
 
 		//coffee
 		RoomUniformBufferObject coffeeUbo{};
-		coffeeUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(-1.5f, 1.3f, -3.3f)) * initialTranslation() * glm::scale(glm::mat4(1), glm::vec3(2.5, 2.5, 2.5)) * baseTr;
+		if (numberObject == 16) {
+			coffeeUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(0, 2, 1)) * initialTranslation() * glm::scale(glm::mat4(1), glm::vec3(6, 6, 6)) * baseTr;
+		}
+		else {
+			coffeeUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(-1.5f, 1.3f, -3.3f)) * initialTranslation() * glm::scale(glm::mat4(1), glm::vec3(2.5, 2.5, 2.5)) * baseTr;
+		}
 		coffeeUbo.mvpMat = ViewPrj * coffeeUbo.mMat;
 		coffeeUbo.nMat = glm::inverse(glm::transpose(coffeeUbo.mMat));
 		DScoffee.map(currentImage, &coffeeUbo, 0);
@@ -1275,10 +1290,17 @@ class A10 : public BaseProject {
 
 				if (glfwGetKey(window, GLFW_KEY_SPACE)) {
 					if (!debounce) {
-						debounce = true;
+						//debounce = true;
 						curDebounce = GLFW_KEY_SPACE;
 						numberObject = object.object;
 						all = false;
+						oldCamPos = CamPos;
+						oldCamAlpha = CamAlpha;
+						oldCamBeta = CamBeta;
+
+						CamPos = glm::vec3(0.0, -2.5, -7);
+						CamAlpha = 0.0f;//cam rotation
+						CamBeta = 0.0f;//cam rotation
 
 						std::cout << "Object selected: " << object.object << "\n";
 
@@ -1302,11 +1324,15 @@ class A10 : public BaseProject {
 
 		if (glfwGetKey(window, GLFW_KEY_F8)) {
 			if (!debounce) {
-				debounce = true;
+				//debounce = true;
 				curDebounce = GLFW_KEY_F8;
 				all = true;
-
+				numberObject = -1;
 				std::cout << "PREMUTO F8: \n";
+
+				CamPos = oldCamPos;
+				CamAlpha = oldCamAlpha;
+				CamBeta = oldCamBeta;
 
 				RebuildPipeline();
 
