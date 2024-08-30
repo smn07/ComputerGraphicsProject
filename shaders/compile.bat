@@ -57,6 +57,20 @@ glslc C:\Users\spagn\source\repos\ComputerGraphicsProject\shaders\cursorFragShad
 
 glslc C:\Users\spagn\source\repos\ComputerGraphicsProject\shaders\cursorVertShader.vert -o cursorVert.spv
 
+glslc C:\Users\spagn\source\repos\ComputerGraphicsProject\shaders\ballFrag.frag -o ballFrag.spv
+
+glslc C:\Users\spagn\source\repos\ComputerGraphicsProject\shaders\ballVert.vert -o ballVert.spv
+
+glslc C:\Users\spagn\source\repos\ComputerGraphicsProject\shaders\microwaveFrag.frag -o microwaveFrag.spv
+
+glslc C:\Users\spagn\source\repos\ComputerGraphicsProject\shaders\microwaveVert.vert -o microwaveVert.spv
+
+glslc C:\Users\spagn\source\repos\ComputerGraphicsProject\shaders\teaFrag.frag -o teaFrag.spv
+
+glslc C:\Users\spagn\source\repos\ComputerGraphicsProject\shaders\teaVert.vert -o teaVert.spv
+
+
+
 
 
 

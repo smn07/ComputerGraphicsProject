@@ -17,13 +17,13 @@ layout(location = 0) out vec4 outColor;
 layout(set = 1, binding = 1) uniform sampler2D room;
 
 layout(set=0,binding = 0) uniform GlobalUniformBufferObject {
-	vec3 lightDir[4];
-	vec3 lightPos[4];
-	vec4 lightColor[4];
+	vec3 lightDir[5];
+	vec3 lightPos[5];
+	vec4 lightColor[5];
 	vec3 eyePos;
 	vec4 lightOn;
-	//float cosIn;
-	//float cosOut;
+	float cosIn;
+	float cosOut;
 	} gubo;
 
 
@@ -42,7 +42,7 @@ vec3 point_light_color(vec3 pos, int i) {
  return pow(gubo.lightColor[i].a / (length(gubo.lightPos[i] - pos)),2.0f)*gubo.lightColor[i].rgb;
  
 }
-/*
+
 vec3 spot_light_dir(vec3 pos, int i)
 {
     // Spot light - direction vector
@@ -67,7 +67,7 @@ vec3 spot_light_color(vec3 pos, int i)
     return point_light_color(pos, i) * clamp((dot(normalize(gubo.lightPos[i] - pos), gubo.lightDir[i]) - gubo.cosOut) / (gubo.cosIn - gubo.cosOut), 0.0f, 1.0f);
     // return vec3(1,0,0);
 }
-*/
+
 float D_cookTorrance(vec3 halfVector, vec3 normalVector, float roughness) {
 	float numerator=exp(-(1 - (pow(dot(halfVector, normalVector), 2))) / (pow(dot(halfVector, normalVector), 2) * pow(roughness, 2)));
 	float denominator= 3.14159*pow(roughness,2)*pow(dot(halfVector,normalVector),4);
@@ -107,7 +107,7 @@ void main() {
 	vec3 LC;	// light color
 	vec3 RendEqSol = vec3(0);
 	vec3 halfVec= vec3(0);
-	//if (ubo.selected==0){
+	
 		// First light
 		LD = point_light_dir(fragPos, 0);
 		LC = point_light_color(fragPos, 0);
@@ -128,15 +128,12 @@ void main() {
 		LC = point_light_color(fragPos, 3);
 		halfVec= normalize(LD + EyeDir);
 		RendEqSol += BRDF(md, Norm, EyeDir, LD,halfVec) * LC * gubo.lightOn.w;// point light
-	//}
 
-	//else {
-		//LD = spot_light_dir(fragPos, 4);
-		//LC = spot_light_color(fragPos, 4);
-		//halfVec= normalize(LD + EyeDir);
-		//RendEqSol += BRDF(md, Norm, EyeDir, LD,halfVec) * LC;
+		LD = spot_light_dir(fragPos, 4);
+		LC = spot_light_color(fragPos, 4);
+		halfVec= normalize(LD + EyeDir);
+		RendEqSol += BRDF(md, Norm, EyeDir, LD,halfVec) * LC * ubo.selected;
 
-	//}
 	//output color
 	outColor = vec4(RendEqSol,1);
 	

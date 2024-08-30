@@ -246,17 +246,17 @@ class A10 : public BaseProject {
 		Pbed.init(this, &VDRoom, "shaders/bedVert.spv", "shaders/bedFrag.spv", { &DSLGlobal,&DSLRoomFace });
 		PTable.init(this, &VDRoom, "shaders/facesRoomVert.spv", "shaders/tableFrag.spv", { &DSLGlobal,&DSLRoomFace });
 		Pkitchen.init(this, &VDRoom, "shaders/kitchenVert.spv", "shaders/kitchenFrag.spv", { &DSLGlobal,&DSLRoomFace });
-		Pvase.init(this, &VDRoom, "shaders/vaseVert.spv", "shaders/vaseFrag.spv", { &DSLGlobal,&DSLRoomFace });
+		Pvase.init(this, &VDRoom, "shaders/vaseVert.spv", "shaders/vaseFrag.spv", { &DSLGlobalFocus,&DSLRoomFace });
 		Pfridge.init(this, &VDRoom, "shaders/fridgeVert.spv", "shaders/fridgeFrag.spv", { &DSLGlobal,&DSLRoomFace });
-		Pmicrowave.init(this, &VDRoom, "shaders/microwaveVert.spv", "shaders/microwaveFrag.spv", { &DSLGlobal,&DSLRoomFace });
-		Pball.init(this, &VDRoom, "shaders/ballVert.spv", "shaders/ballFrag.spv", { &DSLGlobal,&DSLRoomFace });
-		Ptea.init(this, &VDRoom, "shaders/teaVert.spv", "shaders/teaFrag.spv", { &DSLGlobal,&DSLRoomFace });
+		Pmicrowave.init(this, &VDRoom, "shaders/microwaveVert.spv", "shaders/microwaveFrag.spv", { &DSLGlobalFocus,&DSLRoomFace });
+		Pball.init(this, &VDRoom, "shaders/ballVert.spv", "shaders/ballFrag.spv", { &DSLGlobalFocus,&DSLRoomFace });
+		Ptea.init(this, &VDRoom, "shaders/teaVert.spv", "shaders/teaFrag.spv", { &DSLGlobalFocus,&DSLRoomFace });
 		Ptoilet.init(this, &VDRoom, "shaders/toiletVert.spv", "shaders/toiletFrag.spv", { &DSLGlobal,&DSLRoomFace });
-		Pheadphones.init(this, &VDRoom, "shaders/headphonesVert.spv", "shaders/headphonesFrag.spv", { &DSLGlobal,&DSLHeadphones });
+		Pheadphones.init(this, &VDRoom, "shaders/headphonesVert.spv", "shaders/headphonesFrag.spv", { &DSLGlobalFocus,&DSLHeadphones });
 		Ptv.init(this, &VDRoom, "shaders/tvVert.spv", "shaders/tvFrag.spv", { &DSLGlobal,&DSLRoomFace });
-		Pcoffee.init(this, &VDRoom, "shaders/coffeeVert.spv", "shaders/coffeeFrag.spv", { &DSLGlobal,&DSLRoomFace });
+		Pcoffee.init(this, &VDRoom, "shaders/coffeeVert.spv", "shaders/coffeeFrag.spv", { &DSLGlobalFocus,&DSLRoomFace });
 		Pchair.init(this, &VDRoom, "shaders/chairVert.spv", "shaders/chairFrag.spv", { &DSLGlobal,&DSLRoomFace });
-		Pcamera.init(this, &VDRoom, "shaders/cameraVert.spv", "shaders/cameraFrag.spv", { &DSLGlobal,&DSLRoomFace });
+		Pcamera.init(this, &VDRoom, "shaders/cameraVert.spv", "shaders/cameraFrag.spv", { &DSLGlobalFocus,&DSLRoomFace });
 		Pcursor.init(this, &VDRoom, "shaders/cursorVert.spv", "shaders/cursorFrag.spv", { &DSLRoomFace });
 
 		// Create models
@@ -323,7 +323,7 @@ class A10 : public BaseProject {
 			//			std::cout << "\n\n\nJson contains " << js.size() << " parts\n\n\n";
 			nlohmann::json ns = js["nodes"];
 			nlohmann::json ld = js["extensions"]["KHR_lights_punctual"]["lights"];
-			for (int i = 0; i < numLight; i++) {
+			for (int i = 0; i < numLightFocus; i++) {
 				glm::vec3 T;
 				glm::vec3 S;
 				glm::quat Q;
@@ -648,7 +648,7 @@ class A10 : public BaseProject {
 		if (all || numberObject == 9) {
 			Pvase.bind(commandBuffer);
 			Mvase.bind(commandBuffer);
-			DSGlobal.bind(commandBuffer, Pvase, 0, currentImage);
+			DSGlobalFocus.bind(commandBuffer, Pvase, 0, currentImage);
 			DSvase.bind(commandBuffer, Pvase, 1, currentImage);
 			vkCmdDrawIndexed(commandBuffer,
 				static_cast<uint32_t>(Mvase.indices.size()), 1, 0, 0, 0);
@@ -667,7 +667,7 @@ class A10 : public BaseProject {
 		if (all || numberObject == 10) {
 			Pmicrowave.bind(commandBuffer);
 			Mmicrowave.bind(commandBuffer);
-			DSGlobal.bind(commandBuffer, Pmicrowave, 0, currentImage);
+			DSGlobalFocus.bind(commandBuffer, Pmicrowave, 0, currentImage);
 			DSmicrowave.bind(commandBuffer, Pmicrowave, 1, currentImage);
 			vkCmdDrawIndexed(commandBuffer,
 				static_cast<uint32_t>(Mmicrowave.indices.size()), 1, 0, 0, 0);
@@ -678,7 +678,7 @@ class A10 : public BaseProject {
 
 			Pball.bind(commandBuffer);
 			Mball.bind(commandBuffer);
-			DSGlobal.bind(commandBuffer, Pball, 0, currentImage);
+			DSGlobalFocus.bind(commandBuffer, Pball, 0, currentImage);
 			DSball.bind(commandBuffer, Pball, 1, currentImage);
 			vkCmdDrawIndexed(commandBuffer,
 				static_cast<uint32_t>(Mball.indices.size()), 1, 0, 0, 0);
@@ -687,7 +687,7 @@ class A10 : public BaseProject {
 		if (all || numberObject == 11) {
 			Ptea.bind(commandBuffer);
 			Mtea.bind(commandBuffer);
-			DSGlobal.bind(commandBuffer, Ptea, 0, currentImage);
+			DSGlobalFocus.bind(commandBuffer, Ptea, 0, currentImage);
 			DStea.bind(commandBuffer, Ptea, 1, currentImage);
 			vkCmdDrawIndexed(commandBuffer,
 				static_cast<uint32_t>(Mtea.indices.size()), 1, 0, 0, 0);
@@ -705,7 +705,7 @@ class A10 : public BaseProject {
 		if (all || numberObject == 14) {
 			Pheadphones.bind(commandBuffer);
 			Mheadphones.bind(commandBuffer);
-			DSGlobal.bind(commandBuffer, Pheadphones, 0, currentImage);
+			DSGlobalFocus.bind(commandBuffer, Pheadphones, 0, currentImage);
 			DSheadphones.bind(commandBuffer, Pheadphones, 1, currentImage);
 			vkCmdDrawIndexed(commandBuffer,
 				static_cast<uint32_t>(Mheadphones.indices.size()), 1, 0, 0, 0);
@@ -732,7 +732,7 @@ class A10 : public BaseProject {
 		if (all || numberObject == 15) {
 			Pcamera.bind(commandBuffer);
 			Mcamera.bind(commandBuffer);
-			DSGlobal.bind(commandBuffer, Pcamera, 0, currentImage);
+			DSGlobalFocus.bind(commandBuffer, Pcamera, 0, currentImage);
 			DScamera.bind(commandBuffer, Pcamera, 1, currentImage);
 			vkCmdDrawIndexed(commandBuffer,
 				static_cast<uint32_t>(Mcamera.indices.size()), 1, 0, 0, 0);
@@ -741,7 +741,7 @@ class A10 : public BaseProject {
 		if (all || numberObject == 16) {
 			Pcoffee.bind(commandBuffer);
 			Mcoffee.bind(commandBuffer);
-			DSGlobal.bind(commandBuffer, Pcoffee, 0, currentImage);
+			DSGlobalFocus.bind(commandBuffer, Pcoffee, 0, currentImage);
 			DScoffee.bind(commandBuffer, Pcoffee, 1, currentImage);
 			vkCmdDrawIndexed(commandBuffer,
 				static_cast<uint32_t>(Mcoffee.indices.size()), 1, 0, 0, 0);
@@ -1179,6 +1179,10 @@ class A10 : public BaseProject {
 		//ROOM BOTTON FACE
 		RoomUniformBufferObject roomBottomFaceUbo{};
 		roomBottomFaceUbo.selected = 0;
+
+		if (numberObject != -1) {
+			roomBottomFaceUbo.selected = 1;
+		}
 		roomBottomFaceUbo.mMat= glm::translate(glm::mat4(1), glm::vec3(0, 0, +2)) * initialTranslation() * glm::scale(glm::mat4(1), glm::vec3(3, 1, 3)) * baseTr;
 		//roomBottomFaceUbo.mvpMat = ViewPrj * glm::translate(glm::mat4(1), glm::vec3(0, 0, -4)) *initialTranslation()* glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(1, 0, 0)) * glm::scale(glm::mat4(1), glm::vec3(3, 3, 1)) * baseTr;
 		roomBottomFaceUbo.mvpMat = ViewPrj * roomBottomFaceUbo.mMat;
@@ -1406,7 +1410,7 @@ class A10 : public BaseProject {
 						CamPos = glm::vec3(0.0, -2.5, -7);
 						CamAlpha = 0.0f;//cam rotation
 						CamBeta = 0.0f;//cam rotation
-
+						lightOn = glm::vec4(0, 0,0, 0);
 						std::cout << "Object selected: " << object.object << "\n";
 
 						RebuildPipeline();
@@ -1442,6 +1446,7 @@ class A10 : public BaseProject {
 
 				ObjAlpha = 0.0f;
 				ObjBeta = 0.0f;
+				lightOn = glm::vec4(1.0, 1.0, 1.0, 1.0);
 
 				RebuildPipeline();
 
