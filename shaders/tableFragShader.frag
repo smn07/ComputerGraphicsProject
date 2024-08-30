@@ -14,19 +14,18 @@ layout(set=1,binding = 0) uniform UniformBufferObject {
 
 layout(location = 0) out vec4 outColor;
 
-//texture coming from the application code (initial phase)
-layout(set = 1, binding = 1) uniform sampler2D armChair;
+layout(set = 1, binding = 1) uniform sampler2D room;
 
 layout(set=0,binding = 0) uniform GlobalUniformBufferObjectFocus {
-	vec3 lightDir[5];
-	vec3 lightPos[5];
-	vec4 lightColor[5];
+	vec3 lightDir[4];
+	vec3 lightPos[4];
+	vec4 lightColor[4];
 	vec3 eyePos;
 	vec4 lightOn;
 	float cosIn;
 	float cosOut;
-
 	} gubo;
+
 
 vec3 point_light_dir(vec3 pos, int i) {
  // Point light - direction vector
@@ -68,46 +67,70 @@ vec3 spot_light_color(vec3 pos, int i)
     return point_light_color(pos, i) * clamp((dot(normalize(gubo.lightPos[i] - pos), gubo.lightDir[i]) - gubo.cosOut) / (gubo.cosIn - gubo.cosOut), 0.0f, 1.0f);
     // return vec3(1,0,0);
 }
+float D_cookTorrance(vec3 halfVector, vec3 normalVector, float roughness) {
+	float numerator=exp(-(1 - (pow(dot(halfVector, normalVector), 2))) / (pow(dot(halfVector, normalVector), 2) * pow(roughness, 2)));
+	float denominator= 3.14159*pow(roughness,2)*pow(dot(halfVector,normalVector),4);
+	return numerator/denominator;
+}
+float G_cookTorrance(vec3 halfVector, vec3 normalVector, vec3 lightVector, vec3 viewVector) {
+	float firstTerm = 2*dot(halfVector,normalVector)*dot(halfVector,viewVector)/dot(viewVector,halfVector);
+	float secondTerm = 2*dot(halfVector,normalVector)*dot(halfVector,lightVector)/dot(viewVector,halfVector);
 
-vec3 BRDF(vec3 md, vec3 Norm, vec3 EyeDir, vec3 LD) {
-// Just the diffuse part of the BRDF because parts of the bed does not have specular reflection--> they don't reflect light
+	return min(1,min(firstTerm,secondTerm));
+}
+float F_cookTorrance(vec3 halfVector, vec3 viewVector,float F0) {
+
+	float F= F0+ (1-F0)*pow((1-clamp(dot(viewVector,halfVector),0.0001,1)),5);
+	return F;
+}
+vec3 BRDF(vec3 objectColor, vec3 Norm, vec3 EyeDir, vec3 LD,vec3 halfVector) {
 	vec3 Diffuse;
 	vec3 Specular;
-	Diffuse = md * max(dot(Norm, LD),0.0f);
-	return Diffuse ;
+	float D= D_cookTorrance(halfVector, Norm, 0.2f);
+	float G= G_cookTorrance(halfVector, Norm, LD, EyeDir);
+	float F= F_cookTorrance(halfVector, EyeDir, 0.05);
+	Specular =  vec3(1,1,1)*(D * G * F / (4 * clamp(dot(EyeDir,Norm),0.000001,1)));
+	Diffuse = objectColor * max(dot(Norm, LD),0.0f);
+
+	return Diffuse + Specular ;
 }
+
+
 void main() {
 	vec3 Norm = normalize(fragNorm);
 	vec3 EyeDir = normalize(gubo.eyePos - fragPos);
-	vec3 md = texture(armChair, fragTexCoord).rgb;
+	vec3 md = texture(room, fragTexCoord).rgb;
+	
+	vec4 Tx = texture(room, fragTexCoord);
 	vec3 LD;	// light direction
 	vec3 LC;	// light color
-
 	vec3 RendEqSol = vec3(0);
+	vec3 halfVec= vec3(0);
 	
 		// First light
 		LD = point_light_dir(fragPos, 0);
 		LC = point_light_color(fragPos, 0);
-		RendEqSol += BRDF(md, Norm, EyeDir, LD) * LC * gubo.lightOn.x;// point light
+		halfVec= normalize(LD + EyeDir);
+		RendEqSol += BRDF(md, Norm, EyeDir, LD,halfVec) * LC* gubo.lightOn.x;
 		// second light
 		LD = point_light_dir(fragPos, 1);
 		LC = point_light_color(fragPos, 1);
-		RendEqSol += BRDF(md, Norm, EyeDir, LD) * LC * gubo.lightOn.y;// point light
+		halfVec= normalize(LD + EyeDir);
+		RendEqSol += BRDF(md, Norm, EyeDir, LD,halfVec) * LC * gubo.lightOn.y;// point light
 		// thirt light
-		LD = point_light_dir(fragPos, 2);
-		LC = point_light_color(fragPos, 2);
-		RendEqSol += BRDF(md, Norm, EyeDir, LD) * LC * gubo.lightOn.z;// point light
+		LD = point_light_dir(fragPos,2);
+		LC = point_light_color(fragPos,2);
+		halfVec= normalize(LD + EyeDir);
+		RendEqSol += BRDF(md, Norm, EyeDir, LD,halfVec) * LC * gubo.lightOn.z;// point light
 		// Fourth light
 		LD = point_light_dir(fragPos, 3);
 		LC = point_light_color(fragPos, 3);
-		RendEqSol += BRDF(md, Norm, EyeDir, LD) * LC * gubo.lightOn.w;// point light
-	
-		LD = spot_light_dir(fragPos, 4);
-		LC = spot_light_color(fragPos, 4);
-		RendEqSol += BRDF(md, Norm, EyeDir, LD) * LC* ubo.selected;
+		halfVec= normalize(LD + EyeDir);
+		RendEqSol += BRDF(md, Norm, EyeDir, LD,halfVec) * LC * gubo.lightOn.w;// point light
+
 
 	
-	// Output color
-	outColor = vec4(RendEqSol, 1.0f);
+	//output color
+	outColor = vec4(RendEqSol,1);
 	
 }

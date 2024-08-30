@@ -1885,7 +1885,50 @@ std::cout << "Starting createInstance()\n"  << std::flush;
 		handleGamePad(GLFW_JOYSTICK_3,m,r,fire);
 		handleGamePad(GLFW_JOYSTICK_4,m,r,fire);
 	}
-	
+
+	//to move focused object
+	void moveObj(float& deltaT,
+		glm::vec3& m,
+		glm::vec3& r,
+		bool& fire) {
+
+		static auto startTime = std::chrono::high_resolution_clock::now();
+		static float lastTime = 0.0f;
+
+		auto currentTime = std::chrono::high_resolution_clock::now();
+		float time = std::chrono::duration<float, std::chrono::seconds::period>
+			(currentTime - startTime).count();
+		deltaT = time - lastTime;
+		lastTime = time;
+
+		static double old_xpos = 0, old_ypos = 0;
+		double xpos, ypos;
+		glfwGetCursorPos(window, &xpos, &ypos);
+		double m_dx = xpos - old_xpos;
+		double m_dy = ypos - old_ypos;
+		old_xpos = xpos; old_ypos = ypos;
+
+		const float MOUSE_RES = 10.0f;
+		glfwSetInputMode(window, GLFW_STICKY_MOUSE_BUTTONS, GLFW_TRUE);
+		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+			r.y = -m_dx / MOUSE_RES;
+			r.x = -m_dy / MOUSE_RES;
+		}
+
+		if (glfwGetKey(window, GLFW_KEY_H)) {
+			r.y = -1.0f;
+		}
+		if (glfwGetKey(window, GLFW_KEY_K)) {
+			r.y = 1.0f;
+		}
+		if (glfwGetKey(window, GLFW_KEY_U)) {
+			r.x = -1.0f;
+		}
+		if (glfwGetKey(window, GLFW_KEY_J)) {
+			r.x = 1.0f;
+		}
+
+	}
 	// Public part of the base class
 	public:
 	// Debug commands

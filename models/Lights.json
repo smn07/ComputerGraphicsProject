@@ -55,13 +55,17 @@
             },
             {
               "color": [
-                0.681277871131897,
                 1,
-                0.9654425978660583
+                1,
+                1
               ],
-              "intensity": 3,
-              "type": "point",
-              "name": "Light.005"
+              "intensity": 6,
+              "spot": {
+                "innerConeAngle": 0.4591524628390111,
+                "outerConeAngle": 0.5401793718338013
+              },
+              "type": "spot",
+              "name": "Spot"
             }
           ]
         }
@@ -160,20 +164,20 @@
       {
         "extensions": {
           "KHR_lights_punctual": {
-            "light": 3
+            "light": 4
           }
         },
-        "name": "Light.005",
+        "name": "Spot",
         "rotation": [
-          -0.2841663062572479,
-          0.7269423604011536,
-          0.34203392267227173,
-          0.5232754349708557
+          0,
+          0,
+          0.8660,
+          0.5
         ],
         "translation": [
           0,
-          -2,
-          -12.274837017059326
+          3,
+          -10
         ]
       }
     ]

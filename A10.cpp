@@ -29,8 +29,17 @@ struct GlobalUniformBufferObject {
 	alignas(16) glm::vec4 lightColor[4];
 	alignas(16) glm::vec3 eyePos;
 	alignas(16) glm::vec4 lightOn;
-	//alignas(4) float cosIn;
-	//alignas(4) float cosOut;
+};
+
+
+struct GlobalUniformBufferObjectFocus {
+	alignas(16) glm::vec3 lightDir[5];
+	alignas(16) glm::vec3 lightPos[5];
+	alignas(16) glm::vec4 lightColor[5];
+	alignas(16) glm::vec3 eyePos;
+	alignas(16) glm::vec4 lightOn;
+	alignas(4) float cosIn;
+	alignas(4) float cosOut;
 };
 
 
@@ -112,7 +121,9 @@ bool isSelected() {
 };
 
 const int numLight = 4;
-// MAIN ! 
+const int numLightFocus = 5;
+
+//MAIN
 class A10 : public BaseProject {
 	protected:
 	
@@ -123,6 +134,8 @@ class A10 : public BaseProject {
 	DescriptorSetLayout DSLRoomFace;	// For Room
 
 	DescriptorSetLayout DSLHeadphones;
+
+	DescriptorSetLayout DSLGlobalFocus;// For Global with focus
 
 
 	// vertex descriptor for the room
@@ -139,7 +152,7 @@ class A10 : public BaseProject {
     TextMaker txt;
 
 	// Models, textures and Descriptor Sets (values assigned to the uniforms)
-	DescriptorSet DSGlobal;
+	DescriptorSet DSGlobal, DSGlobalFocus;
 
 	Model MroomFace, bottomFace, Marmchair, Mbed,Mtable,Mkitchen,Mvase,Mfridge,Mmicrowave,Mball,Mtea, 
 		Mtoilet, Mheadphones, Mtv, Mcoffee, Mcamera, Mchair,Mcursor;
@@ -157,11 +170,13 @@ class A10 : public BaseProject {
 	glm::vec3 CamPos = glm::vec3(0.0, 1.5, 7.0);
 	float CamAlpha = 0.0f;//cam rotation
 	float CamBeta = 0.0f;//cam rotation
+	float ObjAlpha = 0.0f;//cam rotation
+	float ObjBeta = 0.0f;//cam rotation
 	float Ar;//screen aspect ratio
 	glm::mat4 ViewMatrix;
-	glm::mat4 LWm[5];// used to contain the light world matrix
-	glm::vec3 LCol[5];//used to contain the light color
-	float LInt[5];//used to contain the light intensity
+	glm::mat4 LWm[6];// used to contain the light world matrix
+	glm::vec3 LCol[6];//used to contain the light color
+	float LInt[6];//used to contain the light intensity
 	float ScosIn, ScosOut;//used to contain the inner and outer cone of the spot light
 	glm::vec4 lightOn;//used to contain the light status, DA VEDERE SE RIDURLO AD UN VETTORE DI 2 PER AVERE SOLO POINT LIGHT E DIRECT
 	
@@ -196,6 +211,10 @@ class A10 : public BaseProject {
 			{1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 0, 1},
 		});
 
+		DSLGlobalFocus.init(this, {
+			{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS, sizeof(GlobalUniformBufferObjectFocus), 1}
+		});
+
 		DSLHeadphones.init(this, {
 			{0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS, sizeof(RoomUniformBufferObject), 1},
 			{1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 0, 1 },
@@ -222,10 +241,10 @@ class A10 : public BaseProject {
 		PRoomFrontFace.init(this, &VDRoom, "shaders/facesRoomVert.spv", "shaders/frontFaceFrag.spv", {&DSLGlobal,&DSLRoomFace });
 		PRoomRightFace.init(this, &VDRoom, "shaders/facesRoomVert.spv", "shaders/leftRightFacesFrag.spv", { &DSLGlobal,&DSLRoomFace });
 		PRoomLeftFace.init(this, &VDRoom, "shaders/facesRoomVert.spv", "shaders/leftRightFacesFrag.spv", { &DSLGlobal,&DSLRoomFace });
-		PRoomBottomFace.init(this, &VDRoom, "shaders/facesRoomVert.spv", "shaders/bottomFrag.spv", { &DSLGlobal,&DSLRoomFace });
-		PArmChair.init(this, &VDRoom, "shaders/armchairVert.spv", "shaders/armchairFrag.spv", { &DSLGlobal,&DSLRoomFace });
+		PRoomBottomFace.init(this, &VDRoom, "shaders/facesRoomVert.spv", "shaders/bottomFrag.spv", { &DSLGlobalFocus,&DSLRoomFace });
+		PArmChair.init(this, &VDRoom, "shaders/armchairVert.spv", "shaders/armchairFrag.spv", { &DSLGlobalFocus,&DSLRoomFace });
 		Pbed.init(this, &VDRoom, "shaders/bedVert.spv", "shaders/bedFrag.spv", { &DSLGlobal,&DSLRoomFace });
-		PTable.init(this, &VDRoom, "shaders/facesRoomVert.spv", "shaders/bottomFrag.spv", { &DSLGlobal,&DSLRoomFace });
+		PTable.init(this, &VDRoom, "shaders/facesRoomVert.spv", "shaders/tableFrag.spv", { &DSLGlobal,&DSLRoomFace });
 		Pkitchen.init(this, &VDRoom, "shaders/kitchenVert.spv", "shaders/kitchenFrag.spv", { &DSLGlobal,&DSLRoomFace });
 		Pvase.init(this, &VDRoom, "shaders/vaseVert.spv", "shaders/vaseFrag.spv", { &DSLGlobal,&DSLRoomFace });
 		Pfridge.init(this, &VDRoom, "shaders/fridgeVert.spv", "shaders/fridgeFrag.spv", { &DSLGlobal,&DSLRoomFace });
@@ -350,10 +369,8 @@ class A10 : public BaseProject {
 				LInt[i] = ld[i]["intensity"];
 				std::cout << LInt[i] << "\n";
 			}
-			//ScosIn = cos((float)ld[4]["spot"]["innerConeAngle"]); 
-			//ScosOut = cos((float)ld[4]["spot"]["outerConeAngle"]);
-			//std::cout << "ScoutIn! "<< ScosIn <<"\n";
-			//std::cout << "ScoutOut! " << ScosOut << "\n";
+			ScosIn = 0.7;
+			ScosOut = 0.9;
 			
 		}
 		catch (const nlohmann::json::exception& e) {
@@ -415,8 +432,7 @@ class A10 : public BaseProject {
 	
 			
 		DSGlobal.init(this, &DSLGlobal, {});
-		//DSGlobalRigthFace.init(this, &DSLGlobal, {});
-		//DSGlobalArmchair.init(this, &DSLGlobal, {});
+		DSGlobalFocus.init(this, &DSLGlobalFocus, {});
 		
 
 		txt.pipelinesAndDescriptorSetsInit();		
@@ -475,6 +491,7 @@ class A10 : public BaseProject {
 
 
 		DSGlobal.cleanup();
+		DSGlobalFocus.cleanup();
 		
 
 
@@ -521,7 +538,7 @@ class A10 : public BaseProject {
 		DSGlobal.cleanup();
 		DSLRoomFace.cleanup();
 		DSLHeadphones.cleanup();
-		//DSLRoomFace.cleanup();
+		DSLGlobalFocus.cleanup();
 	
 
 		
@@ -560,7 +577,7 @@ class A10 : public BaseProject {
 			Marmchair.bind(commandBuffer);
 			PArmChair.bind(commandBuffer);
 			DSArmchair.bind(commandBuffer, PArmChair, 1, currentImage);
-			DSGlobal.bind(commandBuffer, PArmChair, 0, currentImage);
+			DSGlobalFocus.bind(commandBuffer, PArmChair, 0, currentImage);
 			vkCmdDrawIndexed(commandBuffer,
 				static_cast<uint32_t>(Marmchair.indices.size()), 1, 0, 0, 0);
 		}
@@ -605,8 +622,7 @@ class A10 : public BaseProject {
 		bottomFace.bind(commandBuffer);
 		PRoomBottomFace.bind(commandBuffer);
 		DSRoomBottomFace.bind(commandBuffer, PRoomBottomFace, 1, currentImage);
-		DSGlobal.bind(commandBuffer, PRoomBottomFace, 0, currentImage);
-
+		DSGlobalFocus.bind(commandBuffer, PRoomBottomFace, 0, currentImage);
 		vkCmdDrawIndexed(commandBuffer,
 				static_cast<uint32_t>(bottomFace.indices.size()), 1, 0, 0, 0);
 
@@ -760,16 +776,55 @@ class A10 : public BaseProject {
 	}
 
 
+
+	std::vector<float> rotateFocusedObj() {
+
+		std::vector<float> rotation;
+		float deltaTime = 0.0f;
+		glm::vec3 m2 = glm::vec3(0.0f), r2 = glm::vec3(0.0f);
+		bool fire2 = false;
+
+		moveObj(deltaTime, m2, r2, fire2);
+
+
+		static float autoTime2 = true;
+		static float cTime2 = 0.0;
+		const float turnTime2 = 36.0f;
+		const float angTurnTimeFact2 = 2.0f * M_PI / turnTime2;
+
+		if (autoTime2) {
+			cTime2 = cTime2 + deltaTime;
+			cTime2 = (cTime2 > turnTime2) ? (cTime2 - turnTime2) : cTime2;
+		}
+		cTime2 += r2.z * angTurnTimeFact2 * 4.0;
+
+		const float ROT_SPEED2 = glm::radians(120.0f);
+		const float MOVE_SPEED2 = 2.0f;
+
+		ObjAlpha = ObjAlpha - ROT_SPEED2 * deltaTime * r2.y;
+		ObjBeta = ObjBeta - ROT_SPEED2 * deltaTime * r2.x;
+
+		rotation.push_back(ObjAlpha);
+		rotation.push_back(ObjBeta);
+
+		return rotation;
+	}
+
+
 	// Here is where you update the uniforms.
 	// Very likely this will be where you will be writing the logic of your application.
 	void updateUniformBuffer(uint32_t currentImage) {
 		static bool debounce = false;
 		static int curDebounce = 0;
 
-		float deltaT;
+		float deltaT = 0.0f;
 		glm::vec3 m = glm::vec3(0.0f), r = glm::vec3(0.0f);
 		bool fire = false;
-		getSixAxis(deltaT, m, r, fire);
+
+		if (numberObject == -1) {
+			getSixAxis(deltaT, m, r, fire);
+		}
+
 
 		static float autoTime = true;
 		static float cTime = 0.0;
@@ -1086,6 +1141,19 @@ class A10 : public BaseProject {
 		}
 		DSGlobal.map(currentImage, &gubo, 0);
 
+
+		GlobalUniformBufferObjectFocus focus{};
+		focus.eyePos = CamPos;
+		focus.lightOn = lightOn;
+		focus.cosIn = ScosIn;
+		focus.cosOut = ScosOut;
+		for (int i = 0; i < numLightFocus; i++) {
+			focus.lightColor[i] = glm::vec4(LCol[i], LInt[i]);
+			focus.lightDir[i] = LWm[i] * glm::vec4(0, 0, 1, 0);// direction taken by multiplying the vector (0,0,1) by the light world matrix, we just need the Z component direction
+			focus.lightPos[i] = LWm[i] * glm::vec4(0, 0, 0, 1); //position taken by multiplying the vector (0,0,0) by the light world matrix, we just need the the last component of the matrix that indicates the position in the space where the light it has been put
+		}
+		DSGlobalFocus.map(currentImage, &focus, 0);
+
 		// objects
 		//ROOM FRONT FACE
 		RoomUniformBufferObject roomFrontFaceUbo{};
@@ -1122,7 +1190,8 @@ class A10 : public BaseProject {
 		armchairUniformBufferObject armchairUbo{};
 		armchairUbo.selected = 0;
 		if (numberObject == 8) {
-			armchairUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(0, 2, 1)) * initialTranslation() * glm::scale(glm::mat4(1), glm::vec3(1, 1, 1)) * baseTr;
+			std::vector<float> rotation = rotateFocusedObj();
+			armchairUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(0, 2, 1)) * initialTranslation() * glm::rotate(glm::mat4(1.0f), rotation[1], glm::vec3(1, 0, 0)) * glm::rotate(glm::mat4(1.0f), rotation[0], glm::vec3(0, 1, 0)) * glm::scale(glm::mat4(1), glm::vec3(1, 1, 1)) * baseTr;
 			armchairUbo.selected = 1;
 		}
 		else {
@@ -1160,7 +1229,8 @@ class A10 : public BaseProject {
 		RoomUniformBufferObject vaseUbo{};
 		vaseUbo.selected = 0;
 		if (numberObject == 9) {
-			vaseUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(0, 2, 1)) * initialTranslation() * glm::scale(glm::mat4(1), glm::vec3(2, 2, 2)) * baseTr;
+			std::vector<float> rotation = rotateFocusedObj();
+			vaseUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(0, 2, 1)) * initialTranslation() * glm::rotate(glm::mat4(1.0f), rotation[1], glm::vec3(1, 0, 0)) * glm::rotate(glm::mat4(1.0f), rotation[0], glm::vec3(0, 1, 0)) *glm::scale(glm::mat4(1), glm::vec3(2, 2, 2)) * baseTr;
 			vaseUbo.selected = 1;
 		}
 		else {
@@ -1182,7 +1252,8 @@ class A10 : public BaseProject {
 		RoomUniformBufferObject microwaveUbo{};
 		microwaveUbo.selected = 0;
 		if (numberObject == 10) {
-			microwaveUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(0, 2, 1)) * initialTranslation() * glm::scale(glm::mat4(1), glm::vec3(5, 5, 5)) * baseTr;
+			std::vector<float> rotation = rotateFocusedObj();
+			microwaveUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(0, 2, 1)) * initialTranslation() * glm::rotate(glm::mat4(1.0f), rotation[1], glm::vec3(1, 0, 0)) * glm::rotate(glm::mat4(1.0f), rotation[0], glm::vec3(0, 1, 0)) *glm::scale(glm::mat4(1), glm::vec3(5, 5, 5)) * baseTr;
 			microwaveUbo.selected = 1;
 		}
 		else {
@@ -1196,7 +1267,8 @@ class A10 : public BaseProject {
 		RoomUniformBufferObject ballUbo{};
 		ballUbo.selected = 0;
 		if (numberObject == 13) {
-			ballUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(0, 2, 1)) * initialTranslation() * glm::scale(glm::mat4(1), glm::vec3(3, 3, 3)) * baseTr;
+			std::vector<float> rotation = rotateFocusedObj();
+			ballUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(0, 2, 1)) * initialTranslation() * glm::rotate(glm::mat4(1.0f), rotation[1], glm::vec3(1, 0, 0)) * glm::rotate(glm::mat4(1.0f), rotation[0], glm::vec3(0, 1, 0)) * glm::scale(glm::mat4(1), glm::vec3(3, 3, 3)) * baseTr;
 			ballUbo.selected = 1;
 		}
 		else {
@@ -1210,7 +1282,8 @@ class A10 : public BaseProject {
 		RoomUniformBufferObject teaUbo{};
 		teaUbo.selected = 0;
 		if (numberObject == 11) {
-			teaUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(0, 2, 1)) * initialTranslation() * glm::scale(glm::mat4(1), glm::vec3(6, 6, 6)) * baseTr;
+			std::vector<float> rotation = rotateFocusedObj();
+			teaUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(0, 2, 1)) * initialTranslation() * glm::rotate(glm::mat4(1.0f), rotation[1], glm::vec3(1, 0, 0)) * glm::rotate(glm::mat4(1.0f), rotation[0], glm::vec3(0, 1, 0)) *glm::scale(glm::mat4(1), glm::vec3(6, 6, 6)) * baseTr;
 			teaUbo.selected = 1;
 		}
 		else {
@@ -1232,7 +1305,8 @@ class A10 : public BaseProject {
 		RoomUniformBufferObject headphoneUbo{};
 		headphoneUbo.selected = 0;
 		if (numberObject == 14) {
-			headphoneUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(0, 2, 1)) * initialTranslation() * glm::scale(glm::mat4(1), glm::vec3(6, 6, 6)) * baseTr;
+			std::vector<float> rotation = rotateFocusedObj();
+			headphoneUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(0, 2, 1)) * initialTranslation() * glm::rotate(glm::mat4(1.0f), rotation[1], glm::vec3(1, 0, 0)) * glm::rotate(glm::mat4(1.0f), rotation[0], glm::vec3(0, 1, 0)) * glm::scale(glm::mat4(1), glm::vec3(6, 6, 6)) * baseTr;
 			headphoneUbo.selected = 1;
 		}
 		else {
@@ -1265,7 +1339,8 @@ class A10 : public BaseProject {
 		RoomUniformBufferObject cameraUbo{};
 		cameraUbo.selected = 0;
 		if (numberObject == 15) {
-			cameraUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(0, 2, 1)) * initialTranslation() * glm::scale(glm::mat4(1), glm::vec3(6, 6, 6)) * baseTr;
+			std::vector<float> rotation = rotateFocusedObj();
+			cameraUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(0, 2, 1)) * initialTranslation() * glm::rotate(glm::mat4(1.0f), rotation[1], glm::vec3(1, 0, 0)) * glm::rotate(glm::mat4(1.0f), rotation[0], glm::vec3(0, 1, 0)) *glm::scale(glm::mat4(1), glm::vec3(6, 6, 6)) * baseTr;
 			cameraUbo.selected = 1;
 		}
 		else {
@@ -1279,7 +1354,8 @@ class A10 : public BaseProject {
 		RoomUniformBufferObject coffeeUbo{};
 		coffeeUbo.selected = 0;
 		if (numberObject == 16) {
-			coffeeUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(0, 2, 1)) * initialTranslation() * glm::scale(glm::mat4(1), glm::vec3(6, 6, 6)) * baseTr;
+			std::vector<float> rotation = rotateFocusedObj();
+			coffeeUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(0, 2, 1)) * initialTranslation() * glm::rotate(glm::mat4(1.0f), rotation[1], glm::vec3(1, 0, 0)) * glm::rotate(glm::mat4(1.0f), rotation[0], glm::vec3(0, 1, 0)) *glm::scale(glm::mat4(1), glm::vec3(6, 6, 6)) * baseTr;
 			coffeeUbo.selected = 1;
 		}
 		else {
@@ -1303,6 +1379,8 @@ class A10 : public BaseProject {
 		cursorUbo.nMat = glm::inverse(glm::transpose(cursorUbo.mMat));
 		DScursor.map(currentImage, &cursorUbo, 0);
 
+
+
 		//code for object focus (intersection)
 		//hit box cursor
 		AABB cursorHitBox(glm::vec3(objectPosition.x-0.2f, objectPosition.y-0.2f, objectPosition.z + 0.2f), glm::vec3(objectPosition.x + 0.2f, objectPosition.y + 0.2f, objectPosition.z + 0.2f), cursor);
@@ -1312,7 +1390,7 @@ class A10 : public BaseProject {
 				//if there is a collision, the object is focused
 				//print the object name with which the camera is colliding
 				//std::cout << "Object focused: " << object.object << "\n";
-				
+
 				//if the user has clicked SPACE, the object is selected and the camera is moved to the object by seeing only the object with a zoom
 
 				if (glfwGetKey(window, GLFW_KEY_SPACE)) {
@@ -1335,6 +1413,7 @@ class A10 : public BaseProject {
 
 					}
 				}
+
 				else {
 					if ((curDebounce == GLFW_KEY_SPACE) && debounce) {
 						debounce = false;
@@ -1352,14 +1431,17 @@ class A10 : public BaseProject {
 		if (glfwGetKey(window, GLFW_KEY_ESCAPE)) {
 			if (!debounce) {
 				//debounce = true;
-				curDebounce = GLFW_KEY_F8;
+				curDebounce = GLFW_KEY_ESCAPE;
 				all = true;
 				numberObject = -1;
-				std::cout << "PREMUTO F8: \n";
+				std::cout << "PREMUTO ESCAPE: \n";
 
 				CamPos = oldCamPos;
 				CamAlpha = oldCamAlpha;
 				CamBeta = oldCamBeta;
+
+				ObjAlpha = 0.0f;
+				ObjBeta = 0.0f;
 
 				RebuildPipeline();
 

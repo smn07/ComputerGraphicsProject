@@ -107,11 +107,11 @@ void main() {
 	vec3 LC;	// light color
 	vec3 RendEqSol = vec3(0);
 	vec3 halfVec= vec3(0);
-	if (ubo.selected==0){
+	//if (ubo.selected==0){
 		// First light
 		LD = point_light_dir(fragPos, 0);
 		LC = point_light_color(fragPos, 0);
-		vec3 halfVec= normalize(LD + EyeDir);
+		halfVec= normalize(LD + EyeDir);
 		RendEqSol += BRDF(md, Norm, EyeDir, LD,halfVec) * LC* gubo.lightOn.x;
 		// second light
 		LD = point_light_dir(fragPos, 1);
@@ -128,15 +128,15 @@ void main() {
 		LC = point_light_color(fragPos, 3);
 		halfVec= normalize(LD + EyeDir);
 		RendEqSol += BRDF(md, Norm, EyeDir, LD,halfVec) * LC * gubo.lightOn.w;// point light
-	}
+	//}
 
-	else {
+	//else {
 		//LD = spot_light_dir(fragPos, 4);
 		//LC = spot_light_color(fragPos, 4);
 		//halfVec= normalize(LD + EyeDir);
 		//RendEqSol += BRDF(md, Norm, EyeDir, LD,halfVec) * LC;
 
-	}
+	//}
 	//output color
 	outColor = vec4(RendEqSol,1);
 	
