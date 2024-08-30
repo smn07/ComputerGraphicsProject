@@ -348,7 +348,7 @@ class A10 : public BaseProject {
 				LCol[i] = glm::vec3(cl[0], cl[1], cl[2]);
 				printVec3("LCol",LCol[i]);
 				LInt[i] = ld[i]["intensity"];
-				std::cout << LInt[i] << "\n\n";
+				std::cout << LInt[i] << "\n";
 			}
 			//ScosIn = cos((float)ld[4]["spot"]["innerConeAngle"]); 
 			//ScosOut = cos((float)ld[4]["spot"]["outerConeAngle"]);
