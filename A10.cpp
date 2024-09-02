@@ -13,8 +13,8 @@ float oldCamAlpha = 0.0f;//cam rotation
 float oldCamBeta = 0.0f;//cam rotation
 
 std::vector<SingleText> outText = {
-	{2, {"Adding an object", "Press SPACE to save the screenshots","",""}, 0, 0},
-	{1, {"Saving Screenshots. Please wait.", "", "",""}, 0, 0}
+	{2, {"Monolocale di Milano", "Press SPACE when cursor is over an object to focus", "",""}, 0, 0}
+	
 };
 
 enum hitBoxOjects {
@@ -145,7 +145,7 @@ class A10 : public BaseProject {
 
 	// Pipelines [Shader couples]
 
-	Pipeline PRoomFrontFace,PRoomRightFace,PRoomLeftFace,PRoomBottomFace,PArmChair,Pbed,PTable,Pkitchen,Pvase,Pfridge,
+	Pipeline PRoomFrontFace, PRoomBackFace,PRoomRightFace,PRoomLeftFace,PRoomBottomFace,PArmChair,Pbed,PTable,Pkitchen,Pvase,Pfridge,
 		Pmicrowave,Pball,Ptea, Ptoilet, Pheadphones, Ptv, Pcoffee, Pcamera, Pchair,Pcursor;
 
 	// Scenes and texts
@@ -158,7 +158,7 @@ class A10 : public BaseProject {
 		Mtoilet, Mheadphones, Mtv, Mcoffee, Mcamera, Mchair,Mcursor;
 	Texture Troom,Tbed,TarmChair,Ttable,Tvase,Tcursor;
 	DescriptorSet DSRoomFrontFace, DSRoomRightFace, DSRoomLeftFace, DSRoomBottomFace, DSArmchair, DSBed, DSTable, DSKitchen,
-		DSvase, DSfridge, DSmicrowave, DSball, DStea, DStoilet, DSheadphones, DStv, DScoffee, DScamera, DSchair,DScursor;
+		DSvase, DSfridge, DSmicrowave, DSball, DStea, DStoilet, DSheadphones, DStv, DScoffee, DScamera, DSchair,DScursor, DSRoomBackFace;
 
 	
 
@@ -167,7 +167,7 @@ class A10 : public BaseProject {
 	int currScene = 0;
 	int subpass = 0;
 
-	glm::vec3 CamPos = glm::vec3(0.0, 1.5, 7.0);
+	glm::vec3 CamPos = glm::vec3(0.0, -3, -13);
 	float CamAlpha = 0.0f;//cam rotation
 	float CamBeta = 0.0f;//cam rotation
 	float ObjAlpha = 0.0f;//cam rotation
@@ -238,9 +238,10 @@ class A10 : public BaseProject {
 
 
 		// Pipelines [Shader couples]
-		PRoomFrontFace.init(this, &VDRoom, "shaders/facesRoomVert.spv", "shaders/frontFaceFrag.spv", {&DSLGlobal,&DSLRoomFace });
-		PRoomRightFace.init(this, &VDRoom, "shaders/facesRoomVert.spv", "shaders/leftRightFacesFrag.spv", { &DSLGlobal,&DSLRoomFace });
-		PRoomLeftFace.init(this, &VDRoom, "shaders/facesRoomVert.spv", "shaders/leftRightFacesFrag.spv", { &DSLGlobal,&DSLRoomFace });
+		PRoomFrontFace.init(this, &VDRoom, "shaders/facesRoomVert.spv", "shaders/frontFaceFrag.spv", {&DSLGlobalFocus,&DSLRoomFace });
+		PRoomBackFace.init(this, &VDRoom, "shaders/backRoomVert.spv", "shaders/backFrag.spv", { &DSLGlobalFocus,&DSLRoomFace });
+		PRoomRightFace.init(this, &VDRoom, "shaders/facesRoomVert.spv", "shaders/leftRightFacesFrag.spv", { &DSLGlobalFocus,&DSLRoomFace });
+		PRoomLeftFace.init(this, &VDRoom, "shaders/facesRoomVert.spv", "shaders/leftRightFacesFrag.spv", { &DSLGlobalFocus,&DSLRoomFace });
 		PRoomBottomFace.init(this, &VDRoom, "shaders/facesRoomVert.spv", "shaders/bottomFrag.spv", { &DSLGlobalFocus,&DSLRoomFace });
 		PArmChair.init(this, &VDRoom, "shaders/armchairVert.spv", "shaders/armchairFrag.spv", { &DSLGlobalFocus,&DSLRoomFace });
 		Pbed.init(this, &VDRoom, "shaders/bedVert.spv", "shaders/bedFrag.spv", { &DSLGlobal,&DSLRoomFace });
@@ -369,8 +370,8 @@ class A10 : public BaseProject {
 				LInt[i] = ld[i]["intensity"];
 				std::cout << LInt[i] << "\n";
 			}
-			ScosIn = 0.7;
-			ScosOut = 0.9;
+			ScosIn = 0.4;
+			ScosOut = 0.5;
 			
 		}
 		catch (const nlohmann::json::exception& e) {
@@ -387,6 +388,7 @@ class A10 : public BaseProject {
 		// This creates a new pipeline (with the current surface), using its shaders
 
 		PRoomFrontFace.create();
+		PRoomBackFace.create();
 		PRoomRightFace.create();
 		PRoomLeftFace.create();
 		PRoomBottomFace.create();
@@ -407,8 +409,10 @@ class A10 : public BaseProject {
 		Pcamera.create();
 		Pcursor.create();
 
+
 		// init the descriptor sets
 		DSRoomRightFace.init(this, &DSLRoomFace, { &Troom });
+		DSRoomBackFace.init(this, &DSLRoomFace, { &Troom });
 		DSRoomFrontFace.init(this, &DSLRoomFace, {&Troom });
 		DSRoomLeftFace.init(this, &DSLRoomFace, {&Troom });
 		DSRoomBottomFace.init(this, &DSLRoomFace, {&Troom });
@@ -444,6 +448,7 @@ class A10 : public BaseProject {
 		// Cleanup pipelines
 
 		PRoomFrontFace.cleanup();
+		PRoomBackFace.cleanup();
 		PRoomRightFace.cleanup();
 		PRoomLeftFace.cleanup();
 		PRoomBottomFace.cleanup();
@@ -467,7 +472,9 @@ class A10 : public BaseProject {
 
 
 
+
 		DSRoomRightFace.cleanup();
+		DSRoomBackFace.cleanup();
 		DSRoomLeftFace.cleanup();
 		DSRoomFrontFace.cleanup();
 		DSRoomBottomFace.cleanup();
@@ -544,6 +551,7 @@ class A10 : public BaseProject {
 		
 		// Destroies the pipelines
 		PRoomFrontFace.destroy();
+		PRoomBackFace.destroy();
 		PRoomRightFace.destroy();
 		PRoomLeftFace.destroy();
 		PRoomBottomFace.destroy();
@@ -591,11 +599,17 @@ class A10 : public BaseProject {
 				static_cast<uint32_t>(Mbed.indices.size()), 1, 0, 0, 0);
 		}
 
+		PRoomBackFace.bind(commandBuffer);
+		MroomFace.bind(commandBuffer);
+		DSRoomBackFace.bind(commandBuffer, PRoomBackFace, 1, currentImage);	// The Room Descriptor Set (Set 1)
+		DSGlobalFocus.bind(commandBuffer, PRoomBackFace, 0, currentImage);	// The Global Descriptor Set (Set 0)
+		vkCmdDrawIndexed(commandBuffer,
+			static_cast<uint32_t>(MroomFace.indices.size()), 1, 0, 0, 0);
 
 		PRoomFrontFace.bind(commandBuffer);
 		MroomFace.bind(commandBuffer);
 		DSRoomFrontFace.bind(commandBuffer, PRoomFrontFace, 1, currentImage);	// The Room Descriptor Set (Set 1)
-		DSGlobal.bind(commandBuffer, PRoomFrontFace, 0, currentImage);	// The Global Descriptor Set (Set 0)
+		DSGlobalFocus.bind(commandBuffer, PRoomFrontFace, 0, currentImage);	// The Global Descriptor Set (Set 0)
 		vkCmdDrawIndexed(commandBuffer,
 					static_cast<uint32_t>(MroomFace.indices.size()), 1, 0, 0, 0);
 
@@ -603,7 +617,7 @@ class A10 : public BaseProject {
 	
 		PRoomRightFace.bind(commandBuffer);
 		DSRoomRightFace.bind(commandBuffer, PRoomRightFace, 1, currentImage);
-		DSGlobal.bind(commandBuffer, PRoomRightFace, 0, currentImage);
+		DSGlobalFocus.bind(commandBuffer, PRoomRightFace, 0, currentImage);
 		vkCmdDrawIndexed(commandBuffer,
 				static_cast<uint32_t>(MroomFace.indices.size()), 1, 0, 0, 0);
 
@@ -611,7 +625,7 @@ class A10 : public BaseProject {
 
 		PRoomLeftFace.bind(commandBuffer);
 		DSRoomLeftFace.bind(commandBuffer, PRoomLeftFace, 1, currentImage);
-		DSGlobal.bind(commandBuffer, PRoomLeftFace, 0, currentImage);
+		DSGlobalFocus.bind(commandBuffer, PRoomLeftFace, 0, currentImage);
 		vkCmdDrawIndexed(commandBuffer,
 				static_cast<uint32_t>(MroomFace.indices.size()), 1, 0, 0, 0);
 
@@ -821,9 +835,9 @@ class A10 : public BaseProject {
 		glm::vec3 m = glm::vec3(0.0f), r = glm::vec3(0.0f);
 		bool fire = false;
 
-		if (numberObject == -1) {
+		//if (numberObject == -1) {
 			getSixAxis(deltaT, m, r, fire);
-		}
+		//}
 
 
 		static float autoTime = true;
@@ -861,31 +875,25 @@ class A10 : public BaseProject {
 
 		// Hit boxes of objects in the scene
 		std::vector<AABB> objectsHitBox = {
-			//AABB(glm::vec3(-0.6f, -6.7f, -10.95f), glm::vec3(0.8f, -4.7f, -10.8f)),		//table
-			AABB(glm::vec3(-1.37f, -5.0f, -11.7f), glm::vec3(1.65f, -3.65f, -10.0f),table), //table object0
-			AABB(glm::vec3(-0.5f, -5.0f, -19.7f), glm::vec3(2.5f, -3.7f, -15.5f),bed),  //bed object1
-			
-			AABB(glm::vec3(-10.0f, -10.0f, -20.0f), glm::vec3(10.0f, 10.0f, -18.8f),frontWall),   //frontWall object2
-			AABB(glm::vec3(-7.2f, -10.0f, -19.0f), glm::vec3(-5.8f, 10.0f, -7.0f),leftWall),  //leftWall object3
-			AABB(glm::vec3(5.8f, -10.0f, -19.0f), glm::vec3(7.2f, 10.0f, -7.0f),rightWall),   //rightWall object4
-			AABB(glm::vec3(-6.0f, -7.0f, -12.6f), glm::vec3(-5.0f, -2.0f, -13.8f),fridge),//fridge object5
-			AABB(glm::vec3(-6.0f, -6.0f, -18.0f), glm::vec3(-5.0f, -4.0f, -13.8f),kitchenLeftWall), //kitchen left side wall object6
-			AABB(glm::vec3(-7.2f, -5.0f, -19.7f), glm::vec3(2.5f, -3.7f, -15.5f),kitchenFrontWall),  //kitchen front side wall object7
-			AABB(glm::vec3(4.0f, -5.0f, -13.8f), glm::vec3(6.0f, -3.0f, -12.0f),armchair), //armchair object8
-			AABB(glm::vec3(-0.3f, -3.6f, -11.0f), glm::vec3(0.3f, -3.0f, -10.5f),vase), //vase object9
-			AABB(glm::vec3(-5.8f, -4.0f, -16.3f), glm::vec3(-5.2f, -3.4f, -15.7f),microwave), //microwave object10
-			AABB(glm::vec3(-5.7f, -3.9f, -18.2f), glm::vec3(-5.3f, -3.5f, -17.7f),tea), //tea object11
-			//NON CORRETTE
-			AABB(glm::vec3(-2.1f, -5.0f, -8.0f), glm::vec3(2.0f, -2.3f, -6.5f), tv),//tv object12
-			AABB(glm::vec3(-4.5f, -5.0f, -8.5f), glm::vec3(-3.5f, -4.0f, -6.5f), ball),//ball object13
-			
-			AABB(glm::vec3(-1.2f, -3.7f, -10.9f), glm::vec3(-0.5f, -3.4f, -10.4f),camera),//camera object15t
-			AABB(glm::vec3(3.6f, -5.0f, -18.7f), glm::vec3(4.4f, -3.0f, -17.5f),toilet), //toile object17
-			AABB(glm::vec3(1.0f, -3.65f, -10.4f), glm::vec3(1.2f, -3.4f, -10.2f),headphones), //headphones 
-			AABB(glm::vec3(-1.7f, -4.0f, -18.5f), glm::vec3(-1.2f, -3.0f, -17.8f),coffee), //coffe machine
-
-
-		};
+		  AABB(glm::vec3(-1.37f, -5.0f, -11.7f), glm::vec3(1.65f, -3.65f, -10.0f),table), //table object0
+		  AABB(glm::vec3(-0.5f, -5.0f, -19.7f), glm::vec3(2.5f, -3.7f, -15.5f),bed),  //bed object1
+		  AABB(glm::vec3(-4.5f, -5.0f, -8.5f), glm::vec3(-3.5f, -4.0f, -6.5f), ball),//ball object13
+		  AABB(glm::vec3(-10.0f, -10.0f, -20.0f), glm::vec3(10.0f, 10.0f, -18.8f),frontWall),   //frontWall object2
+		  AABB(glm::vec3(-7.2f, -10.0f, -19.0f), glm::vec3(-5.8f, 10.0f, -7.0f),leftWall),  //leftWall object3
+		  AABB(glm::vec3(5.8f, -10.0f, -19.0f), glm::vec3(7.2f, 10.0f, -7.0f),rightWall),   //rightWall object4
+		  AABB(glm::vec3(4.0f, -5.0f, -13.8f), glm::vec3(6.0f, -3.0f, -12.0f),armchair), //armchair object8
+		  AABB(glm::vec3(-2.1f, -5.0f, -8.0f), glm::vec3(2.0f, -2.3f, -6.5f), tv),//tv object12
+		  AABB(glm::vec3(-1.2f, -3.7f, -10.9f), glm::vec3(-0.5f, -3.4f, -10.4f),camera),//camera object15t
+		  AABB(glm::vec3(1.0f, -3.7f, -10.7f), glm::vec3(1.4f, -3.4f, -10.2f),headphones), //headphones 
+		  AABB(glm::vec3(0.0f, -3.7f, -11.1f), glm::vec3(0.5f, -3.0f, -10.7f),vase), //vase object9
+		  AABB(glm::vec3(-7.0f, -5.0f, -14.0f), glm::vec3(-5.0f, -2.0f, -12.5f),fridge),//fridge object5
+		  AABB(glm::vec3(-7.0f, -5.0f, -19.8f), glm::vec3(-5.0f, -2.0f, -14.0f),kitchenLeftWall), //kitchen left side wall object6
+		  AABB(glm::vec3(-7.0f, -5.0f, -19.8f), glm::vec3(0.0f, -2.0f, -17.9f),kitchenFrontWall),  //kitchen front side wall object7
+		  AABB(glm::vec3(-7.0f, -3.7f, -16.6f), glm::vec3(-5.0f, -2.7f, -15.5f),microwave), //microwave object10
+		  AABB(glm::vec3(-7.0f, -3.7f, -18.2f), glm::vec3(-5.0f, -2.7f, -17.7f),tea), //tea object11
+		  AABB(glm::vec3(-2.0f, -3.7f, -19.8f), glm::vec3(-1.0f, -2.7f, -17.9f),coffee), //coffe machine
+		  AABB(glm::vec3(1.6f, -5.0f, -19.8f), glm::vec3(4.4f, -3.0f, -17.3f),toilet), //toilet object17
+				};
 
 		std::vector<AABB> objectsHitBoxFocus = {
 			 AABB(glm::vec3(4.0f, -5.0f, -13.8f), glm::vec3(6.0f, -3.0f, -12.0f),armchair), //armchair object8
@@ -893,7 +901,7 @@ class A10 : public BaseProject {
 			 AABB(glm::vec3(-5.8f, -4.0f, -16.3f), glm::vec3(-5.2f, -3.4f, -15.7f),microwave), //microwave object 10
 			 AABB(glm::vec3(-5.7f, -3.9f, -18.2f), glm::vec3(-5.3f, -3.5f, -17.7f),tea), //tea object11
 			 AABB(glm::vec3(-4.5f, -5.0f, -8.5f), glm::vec3(-3.5f, -4.0f, -6.5f), ball), //ball object13
-			 AABB(glm::vec3(1.0f, -3.65f, -10.4f), glm::vec3(1.2f, -3.4f, -10.2f),headphones), //headphones 
+			  AABB(glm::vec3(1.0f, -3.7f, -10.7f), glm::vec3(1.4f, -3.4f, -10.2f),headphones), //headphones  
 			 AABB(glm::vec3(-1.2f, -3.7f, -10.8f), glm::vec3(-0.5f, -3.4f, -10.4f),camera),//camera object15
 			AABB(glm::vec3(-1.7f, -10.0f, -18.5f), glm::vec3(-1.2f, 10.0f, -17.8f),coffee), //coffe machine
 
@@ -903,8 +911,8 @@ class A10 : public BaseProject {
 		//[CAMBIA TUTTE LE y CON -10 E 10 UNA VOLTA MODELLATE TUTTE LE HITBOX]
 	
 		// Hit box of the camera and of the new camera (after the potential move)
-		AABB camHitBox(glm::vec3(CamPos.x -0.1, CamPos.y-0.1, CamPos.z-0.1), glm::vec3(CamPos.x+0.1, CamPos.y+0.1, CamPos.z+0.1), camHitBoxEnum);
-		AABB newcamHitBox(glm::vec3(newCamPos.x-0.1, newCamPos.y-0.1, newCamPos.z-0.1), glm::vec3(newCamPos.x+0.1, newCamPos.y+0.1, newCamPos.z+0.1), camHitBoxEnum);
+		AABB camHitBox(glm::vec3(CamPos.x -0.1, -10, CamPos.z-0.1), glm::vec3(CamPos.x+0.1, 10, CamPos.z+0.1), camHitBoxEnum);
+		AABB newcamHitBox(glm::vec3(newCamPos.x-0.1, -10, newCamPos.z-0.1), glm::vec3(newCamPos.x+0.1, 10, newCamPos.z+0.1), camHitBoxEnum);
 
 		bool collisionDetected = false;
 		for (AABB& object : objectsHitBox) {
@@ -923,7 +931,7 @@ class A10 : public BaseProject {
 
 			// Check X-axis (sideways) movement
 			glm::vec3 tempPosX = CamPos + moveRight;
-			AABB tempHitBoxX(glm::vec3(tempPosX.x - 0.1, tempPosX.y - 0.1, tempPosX.z - 0.1), glm::vec3(tempPosX.x + 0.1, tempPosX.y + 0.1, tempPosX.z + 0.1), camHitBoxEnum);
+			AABB tempHitBoxX(glm::vec3(tempPosX.x - 0.1, -10, tempPosX.z - 0.1), glm::vec3(tempPosX.x + 0.1, 10, tempPosX.z + 0.1), camHitBoxEnum);
 			for (AABB& object : objectsHitBox) {
 				if (checkCollision(tempHitBoxX, object)) {
 					allowX = false;
@@ -933,7 +941,7 @@ class A10 : public BaseProject {
 
 			// Check Y-axis (up/down) movement
 			glm::vec3 tempPosY = CamPos + moveUp;
-			AABB tempHitBoxY(glm::vec3(tempPosY.x - 0.1, tempPosY.y - 0.1, tempPosY.z - 0.1), glm::vec3(tempPosY.x + 0.1, tempPosY.y + 0.1, tempPosY.z + 0.1), camHitBoxEnum);
+			AABB tempHitBoxY(glm::vec3(tempPosY.x - 0.1,-10, tempPosY.z - 0.1), glm::vec3(tempPosY.x + 0.1, 10, tempPosY.z + 0.1), camHitBoxEnum);
 			for (AABB& object : objectsHitBox) {
 				if (checkCollision(tempHitBoxY, object)) {
 					allowY = false;
@@ -943,7 +951,7 @@ class A10 : public BaseProject {
 
 			// Check Z-axis (forward/backward) movement
 			glm::vec3 tempPosZ = CamPos + moveForward;
-			AABB tempHitBoxZ(glm::vec3(tempPosZ.x - 0.1, tempPosZ.y - 0.1, tempPosZ.z - 0.1), glm::vec3(tempPosZ.x + 0.1, tempPosZ.y + 0.1, tempPosZ.z + 0.1), camHitBoxEnum);
+			AABB tempHitBoxZ(glm::vec3(tempPosZ.x - 0.1, -10, tempPosZ.z - 0.1), glm::vec3(tempPosZ.x + 0.1, 10, tempPosZ.z + 0.1), camHitBoxEnum);
 			for (AABB& object : objectsHitBox) {
 				if (checkCollision(tempHitBoxZ, object)) {
 					allowZ = false;
@@ -1062,57 +1070,7 @@ class A10 : public BaseProject {
 			}
 		}
 
-		/*		if(currScene == 1) {
-					switch(subpass) {
-					  case 0:
-		CamPos   = glm::vec3(0.0644703, 6.442, 8.83251);
-		CamAlpha = 0;
-		CamBeta  = -0.4165;
-		cTime    = 2.40939;
-		autoTime = false;
-						break;
-					  case 1:
-		CamPos   = glm::vec3(-1.21796, 6.82323, 5.58497);
-		CamAlpha = 0.284362;
-		CamBeta  = -0.58455;
-		cTime    = 23.3533;
-						break;
-					  case 2:
-		CamPos   = glm::vec3(0.921455, 3.97743, 0.855181);
-		CamAlpha = -1.16426;
-		CamBeta  = -0.388393;
-		cTime    = 36.6178;
-						break;
-					  case 3:
-		 CamPos   = glm::vec3(5.59839, 4.04786, 2.59767);
-		CamAlpha = 1.01073;
-		CamBeta  = -0.213902;
-		cTime    = 15.6739;
-						break;
-					}
-				}
-
-				if(currScene == 1) {
-					subpassTimer += deltaT;
-					if(subpassTimer > 4.0f) {
-						subpassTimer = 0.0f;
-						subpass++;
-						std::cout << "Scene : " << currScene << " subpass: " << subpass << "\n";
-						char buf[20];
-						sprintf(buf, "A08_%d.png", subpass);
-						saveScreenshot(buf, currentImage);
-						if(subpass == 4) {
-		CamPos   = glm::vec3(0, 1.5, 7);
-		CamAlpha = 0;
-		CamBeta  = 0;
-		autoTime = true;
-							currScene = 0;
-							std::cout << "Scene : " << currScene << "\n";
-							RebuildPipeline();
-						}
-					}
-				}*/
-
+		
 
 		// Here is where you actually update your uniforms
 		glm::mat4 M = glm::perspective(glm::radians(45.0f), Ar, 0.1f, 50.0f);
@@ -1157,20 +1115,41 @@ class A10 : public BaseProject {
 		// objects
 		//ROOM FRONT FACE
 		RoomUniformBufferObject roomFrontFaceUbo{};
+		if (numberObject != -1) {
+			roomFrontFaceUbo.selected = 1;
+		}
 		roomFrontFaceUbo.mMat= glm::translate(glm::mat4(1), glm::vec3(0, 0, -4)) * initialTranslation() * glm::scale(glm::mat4(1), glm::vec3(3, 1, 1)) * baseTr;
 		roomFrontFaceUbo.mvpMat = ViewPrj * roomFrontFaceUbo.mMat;
 		roomFrontFaceUbo.nMat = glm::inverse(glm::transpose(roomFrontFaceUbo.mMat));
 		//roomRightFaceUbo.mvpMat = ViewPrj * glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0, 1, 0)) * baseTr;
 		//DSRoomRightFace.map(currentImage, &roomRightFaceUbo, 0);
 		DSRoomFrontFace.map(currentImage, &roomFrontFaceUbo, 0);
+
+		//ROOM BACK FACE
+		RoomUniformBufferObject roomBackFaceUbo{};
+		if (numberObject != -1) {
+			roomBackFaceUbo.selected = 1;
+		}
+		roomBackFaceUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(0, 0, +8))*initialTranslation()*glm::scale(glm::mat4(1), glm::vec3(3, 1, 1)) * baseTr;
+		roomBackFaceUbo.mvpMat = ViewPrj * roomBackFaceUbo.mMat;
+		roomBackFaceUbo.nMat = glm::inverse(glm::transpose(roomBackFaceUbo.mMat));
+		DSRoomBackFace.map(currentImage, &roomBackFaceUbo, 0);
+
 		//ROOM RIGHT FACE
 		RoomUniformBufferObject roomRightFaceUbo{};
+		if (numberObject != -1) {
+			roomRightFaceUbo.selected = 1;
+		}
 		roomRightFaceUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(6, 0, 2)) * initialTranslation() * glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0, 1, 0)) * glm::scale(glm::mat4(1), glm::vec3(3, 1, 1)) * baseTr;
 		roomRightFaceUbo.mvpMat = ViewPrj* roomRightFaceUbo.mMat;
 		roomRightFaceUbo.nMat = glm::inverse(glm::transpose(roomRightFaceUbo.mMat));
 		DSRoomRightFace.map(currentImage, &roomRightFaceUbo, 0);
+
 		//ROOM LEFT FACE
 		RoomUniformBufferObject roomLeftFaceUbo{};
+		if (numberObject != -1) {
+			roomLeftFaceUbo.selected = 1;
+		}
 		roomLeftFaceUbo.mMat=glm::translate(glm::mat4(1), glm::vec3(-6, 0, 2))* initialTranslation()* glm::rotate(glm::mat4(1.0f), glm::radians(-90.0f), glm::vec3(0, 1, 0))* glm::scale(glm::mat4(1), glm::vec3(3, 1, 1))* baseTr;
 		roomLeftFaceUbo.mvpMat = ViewPrj * roomLeftFaceUbo.mMat;
 		roomLeftFaceUbo.nMat = glm::inverse(glm::transpose(roomLeftFaceUbo.mMat));
@@ -1234,7 +1213,7 @@ class A10 : public BaseProject {
 		vaseUbo.selected = 0;
 		if (numberObject == 9) {
 			std::vector<float> rotation = rotateFocusedObj();
-			vaseUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(0, 2, 1)) * initialTranslation() * glm::rotate(glm::mat4(1.0f), rotation[1], glm::vec3(1, 0, 0)) * glm::rotate(glm::mat4(1.0f), rotation[0], glm::vec3(0, 1, 0)) *glm::scale(glm::mat4(1), glm::vec3(2, 2, 2)) * baseTr;
+			vaseUbo.mMat = glm::translate(glm::mat4(1), glm::vec3(-0.5, 2, 1)) * initialTranslation() * glm::rotate(glm::mat4(1.0f), rotation[1], glm::vec3(1, 0, 0)) * glm::rotate(glm::mat4(1.0f), rotation[0], glm::vec3(0, 1, 0)) *glm::scale(glm::mat4(1), glm::vec3(2, 2, 2)) * baseTr;
 			vaseUbo.selected = 1;
 		}
 		else {
@@ -1407,7 +1386,7 @@ class A10 : public BaseProject {
 						oldCamAlpha = CamAlpha;
 						oldCamBeta = CamBeta;
 
-						CamPos = glm::vec3(0.0, -2.5, -7);
+						CamPos = glm::vec3(0.0, -2.5, -7);//cam position
 						CamAlpha = 0.0f;//cam rotation
 						CamBeta = 0.0f;//cam rotation
 						lightOn = glm::vec4(0, 0,0, 0);

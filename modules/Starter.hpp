@@ -1842,16 +1842,16 @@ std::cout << "Starting createInstance()\n"  << std::flush;
 		}
 
 		if(glfwGetKey(window, GLFW_KEY_LEFT)) {
-			r.y = -1.0f;
+			r.y = -0.5f;
 		}
 		if(glfwGetKey(window, GLFW_KEY_RIGHT)) {
-			r.y = 1.0f;
+			r.y = 0.5f;
 		}
 		if(glfwGetKey(window, GLFW_KEY_UP)) {
-			r.x = -1.0f;
+			r.x = -0.5f;
 		}
 		if(glfwGetKey(window, GLFW_KEY_DOWN)) {
-			r.x = 1.0f;
+			r.x = 0.5f;
 		}
 		if(glfwGetKey(window, GLFW_KEY_Q)) {
 			r.z = 1.0f;
@@ -1873,10 +1873,10 @@ std::cout << "Starting createInstance()\n"  << std::flush;
 			m.z = -1.0f;
 		}
 		if(glfwGetKey(window, GLFW_KEY_R)) {
-			m.y = 1.0f;
+			//m.y = 1.0f;
 		}
 		if(glfwGetKey(window, GLFW_KEY_F)) {
-			m.y = -1.0f;
+			//m.y = -1.0f;
 		}
 		
 		fire = glfwGetKey(window, GLFW_KEY_SPACE) | (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS);

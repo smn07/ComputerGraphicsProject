@@ -7,6 +7,11 @@ glslc armChairVert.vert -o armchairVert.spv
 REM Compila il secondo file GLSL
 glslc C:\Users\spagn\source\repos\ComputerGraphicsProject\shaders\facesRoomShader.vert -o facesRoomVert.spv
 
+glslc C:\Users\spagn\source\repos\ComputerGraphicsProject\shaders\backRoomShader.vert -o backRoomVert.spv
+
+glslc C:\Users\spagn\source\repos\ComputerGraphicsProject\shaders\backFaceShader.frag -o backFrag.spv
+
+
 glslc C:\Users\spagn\source\repos\ComputerGraphicsProject\shaders\bedVert.vert -o bedVert.spv
 
 glslc C:\Users\spagn\source\repos\ComputerGraphicsProject\shaders\armChairShader.frag -o armchairFrag.spv
