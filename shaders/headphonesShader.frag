@@ -1,12 +1,6 @@
 #version 450#extension GL_ARB_separate_shader_objects : enable
 // this defines the variable received from the Vertex Shader// the locations must match the one of its out variables
 layout(location = 0) in vec3 fragPos;layout(location = 1) in vec3 fragNorm;layout(location = 2) in vec2 fragUV;
-layout(set=1,binding = 0) uniform UniformBufferObject {
-	mat4 mvpMat;
-	mat4 mMat;
-	mat4 nMat;
-	int selected;
-} ubo;
 // This defines the color computed by this shader. Generally is always location 0.
 layout(location = 0) out vec4 outColor;// Here the Uniform buffers are defined. In this case, the Global Uniforms of Set 0// The texture of Set 1 (binding 1), and the Material parameters (Set 1, binding 2)// are used. Note that each definition must match the one used in the CPP codelayout(set = 0, binding = 0) uniform GlobalUniformBufferObjectFocus {
 	vec3 lightDir[5];
@@ -16,7 +10,7 @@ layout(location = 0) out vec4 outColor;// Here the Uniform buffers are defined
 	vec4 lightOn;	float cosIn;
 	float cosOut;} gubo;
 layout(set = 1, binding = 2) uniform HeadphonesParUniformBufferObject {
-	float Pow;} mubo;
+	float Pow;	int selected;} mubo;
 layout(set = 1, binding = 1) uniform sampler2D tex;vec3 point_light_dir(vec3 pos, int i) {
  // Point light - direction vector
  // Position of the light in <gubo.lightPos[i]>
@@ -63,6 +57,6 @@ vec3 spot_light_color(vec3 pos, int i)
 	brdf = BRDF(Norm, EyeDir, lightDir, lightColor, Pow, md);	col  += brdf * lightColor * gubo.lightOn.z;		lightDir = normalize(gubo.lightDir[3]);	lightColor = gubo.lightColor[3].rgb;
 	brdf = BRDF(Norm, EyeDir, lightDir, lightColor, Pow, md);	col  += brdf * lightColor * gubo.lightOn.w;	
 	lightDir = normalize(gubo.lightDir[3]);	lightColor = gubo.lightColor[3].rgb;
-	brdf = BRDF(Norm, EyeDir, lightDir, lightColor, Pow, md);	col  += brdf * lightColor *ubo.selected;
+	brdf = BRDF(Norm, EyeDir, lightDir, lightColor, Pow, md);	col  += brdf * lightColor * mubo.selected;
 	
 	outColor = vec4(col, 1.0f);}

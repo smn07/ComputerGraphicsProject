@@ -9,12 +9,10 @@ layout(location = 0) out vec4 outColor;
 
 layout(set=1,binding = 1) uniform sampler2D room;
 
-layout(set=1,binding = 0) uniform UniformBufferObject {
-	mat4 mvpMat;
-	mat4 mMat;
-	mat4 nMat;
+
+layout(set=1,binding = 2) uniform selectedUniformBufferObject {
 	int selected;
-} ubo;
+} selection;
 
 layout(set=0,binding = 0) uniform GlobalUniformBufferObjectFocus {
 	vec3 lightDir[5];
@@ -134,7 +132,7 @@ void main() {
 		LD = spot_light_dir(fragPos, 4);
 		LC = spot_light_color(fragPos, 4);
 		halfVec= normalize(LD + EyeDir);
-		RendEqSol += BRDF(modifiedColor, Norm, EyeDir, LD,halfVec) * LC* ubo.selected;
+		RendEqSol += BRDF(modifiedColor, Norm, EyeDir, LD,halfVec) * LC* selection.selected;
 
     outColor = vec4(RendEqSol, 1.0f);
 }

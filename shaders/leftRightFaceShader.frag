@@ -5,12 +5,10 @@ layout(location = 0) in vec2 fragTexCoord;
 layout(location = 1) in vec3 fragNorm;
 layout(location = 2) in vec3 fragPos;
 
-layout(set=1,binding = 0) uniform UniformBufferObject {
-	mat4 mvpMat;
-	mat4 mMat;
-	mat4 nMat;
+
+layout(set=1,binding = 2) uniform selectedUniformBufferObject {
 	int selected;
-} ubo;
+} selection;
 
 layout(location = 0) out vec4 outColor;
 
@@ -139,7 +137,7 @@ void main() {
 		LD = spot_light_dir(fragPos, 4);
 		LC = spot_light_color(fragPos, 4);
 		halfVec= normalize(LD + EyeDir);
-		RendEqSol += BRDF(modifiedColor, Norm, EyeDir, LD,halfVec) * LC* ubo.selected;
+		RendEqSol += BRDF(modifiedColor, Norm, EyeDir, LD,halfVec) * LC* selection.selected;
 
 		//output color
 		outColor = vec4(RendEqSol,1);

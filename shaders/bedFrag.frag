@@ -5,12 +5,6 @@ layout(location = 0) in vec2 fragTexCoord;
 layout(location = 1) in vec3 fragNorm;
 layout(location = 2) in vec3 fragPos;
 
-layout(set=1,binding = 0) uniform UniformBufferObject {
-	mat4 mvpMat;
-	mat4 mMat;
-	mat4 nMat;
-	int selected;
-} ubo;
 
 layout(location = 0) out vec4 outColor;
 
@@ -23,19 +17,7 @@ layout(set=0,binding = 0) uniform GlobalUniformBufferObject {
 	vec3 eyePos;
 	vec4 lightOn;
 	} gubo;
-////////// NOT USED ///////////////
-vec3 direct_light_dir(vec3 pos, int i) {
- // Direct light - direction vector
- // Direction of the light in <gubo.lightDir[i]>
- return gubo.lightDir[i];
-}
 
-vec3 direct_light_color(vec3 pos, int i) {
- // Direct light - color
- // Color of the light in <gubo.lightColor[i].rgb>
- return gubo.lightColor[i].rgb;
-}
-////////////////////////////////////
 vec3 point_light_dir(vec3 pos, int i) {
  // Point light - direction vector
  // Position of the light in <gubo.lightPos[i]>
