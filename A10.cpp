@@ -162,6 +162,7 @@ class Project : public BaseProject {
 	float ObjAlpha = 0.0f;//cam rotation
 	float ObjBeta = 0.0f;//cam rotation
 	float Ar;//screen aspect ratio
+	float FOV = 45.0f;//fov of the camera
 	glm::mat4 ViewMatrix;
 	glm::mat4 LWm[6];// used to contain the light world matrix
 	glm::vec3 LCol[6];//used to contain the light color
@@ -828,7 +829,21 @@ class Project : public BaseProject {
 
 		return rotation;
 	}
+	//track the keys pressed by the user and increment/decrement the FOV value accordingly
+	void focusFunction() {
 
+		float focusValue = 0;
+		float deltaTime = 0.0f;
+
+
+		focusGetAxis(deltaTime, focusValue);
+
+		FOV = FOV + focusValue;
+
+
+
+	}
+	//function to get the key pressed by the user
 	void getKeyPressed(GLFWwindow *window, static bool &debounce, static int &curDebounce ) {
 		if (glfwGetKey(window, GLFW_KEY_V)) {
 			if (!debounce) {
@@ -975,7 +990,7 @@ class Project : public BaseProject {
 		  AABB(glm::vec3(-2.0f, -3.7f, -19.8f), glm::vec3(-1.0f, -2.7f, -17.9f),coffee), //coffe machine 17
 		  AABB(glm::vec3(1.6f, -5.0f, -19.8f), glm::vec3(4.4f, -3.0f, -17.3f),toilet), //toilet object 18
 				};
-
+		// hitBoxes of the objects that can be focused
 		std::vector<AABB> objectsHitBoxFocus = {
 			 AABB(glm::vec3(4.0f, -5.0f, -13.8f), glm::vec3(6.0f, -3.0f, -12.0f),armchair), //armchair object8
 			 AABB(glm::vec3(-0.3f, -3.6f, -11.0f), glm::vec3(0.3f, -3.0f, -10.5f),vase), //vase object9
@@ -1037,18 +1052,26 @@ class Project : public BaseProject {
 		}
 
 		static float subpassTimer = 0.0;
-
-		
-	
-
+		//Function to understand which key is pressed by the user
 		getKeyPressed(window, debounce, curDebounce);
 		
 
 		
 
-		//Perspective matrix
-		glm::mat4 M = glm::perspective(glm::radians(45.0f), Ar, 0.1f, 50.0f);
-		M[1][1] *= -1;
+		//Perspective matrix when focus is not active and when focus is active
+		glm::mat4 M;
+		if (numberObject == -1) {
+			//just the normal perspective matrix because no object is on focus
+			M = glm::perspective(glm::radians(45.0f), Ar, 0.1f, 50.0f);
+			M[1][1] *= -1;
+		}
+		else {
+			// An object is on focus and so the FOV of the camera is changed to focus on the object
+			focusFunction();
+			//std::cout << "focus = " << focus << ";\n";
+			M = glm::perspective(glm::radians(FOV), Ar, 0.1f, 50.0f);
+			M[1][1] *= -1;
+		}
 		//View matrix
 		glm::mat4 Mv = glm::rotate(glm::mat4(1.0), -CamBeta, glm::vec3(1, 0, 0)) *
 			glm::rotate(glm::mat4(1.0), -CamAlpha, glm::vec3(0, 1, 0)) *
@@ -1366,6 +1389,7 @@ class Project : public BaseProject {
 						curDebounce = GLFW_KEY_SPACE;
 						numberObject = object.object;
 						all = false;
+						//save the old position of the camera
 						oldCamPos = CamPos;
 						oldCamAlpha = CamAlpha;
 						oldCamBeta = CamBeta;
@@ -1373,7 +1397,7 @@ class Project : public BaseProject {
 						CamPos = glm::vec3(0.0, -2.5, -7);//cam position
 						CamAlpha = 0.0f;//cam rotation
 						CamBeta = 0.0f;//cam rotation
-						lightOn = glm::vec4(0, 0,0, 0);
+						lightOn = glm::vec4(0, 0,0, 0);// turn off the light except for the spot light
 						std::cout << "Object selected: " << object.object << "\n";
 
 						RebuildPipeline();
@@ -1402,14 +1426,15 @@ class Project : public BaseProject {
 				all = true;
 				numberObject = -1;
 				std::cout << "PREMUTO ESCAPE: \n";
-
+				// put the camera back to the initial position
 				CamPos = oldCamPos;
 				CamAlpha = oldCamAlpha;
 				CamBeta = oldCamBeta;
 
-				ObjAlpha = 0.0f;
-				ObjBeta = 0.0f;
-				lightOn = glm::vec4(1.0, 1.0, 1.0, 1.0);
+				ObjAlpha = 0.0f;// reset the rotation of the object
+				ObjBeta = 0.0f;// reset the rotation of the object
+				lightOn = glm::vec4(1.0, 1.0, 1.0, 1.0);// turn the light on for the normal scene
+				FOV = 45.0f;// back to the normal perspective
 
 				RebuildPipeline();
 

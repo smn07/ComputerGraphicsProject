@@ -1929,6 +1929,17 @@ std::cout << "Starting createInstance()\n"  << std::flush;
 		}
 
 	}
+	//to move focused object
+	void focusGetAxis(float& deltaT,
+		float& focus) {
+		if (glfwGetKey(window, GLFW_KEY_UP)) {
+			focus = -1.0f;
+		}
+		if (glfwGetKey(window, GLFW_KEY_DOWN)) {
+			focus = 1.0f;
+		}
+
+	}
 	// Public part of the base class
 	public:
 	// Debug commands
