@@ -830,7 +830,7 @@ class Project : public BaseProject {
 		return rotation;
 	}
 	//track the keys pressed by the user and increment/decrement the FOV value accordingly
-	void focusFunction() {
+	void focusFunction(glm::vec3& moveRight, glm::vec3& moveUp, glm::vec3& moveForward) {
 
 		float focusValue = 0;
 		float deltaTime = 0.0f;
@@ -842,6 +842,43 @@ class Project : public BaseProject {
 
 
 
+	}
+	void getMovementAndRotationCamera(glm::vec3 &moveRight,glm::vec3 &moveUp, glm::vec3 &moveForward) {
+		float deltaT = 0.0f;
+		glm::vec3 m = glm::vec3(0.0f), r = glm::vec3(0.0f);
+		bool fire = false;
+		// Just when one of the object is not in focus mode the user can move the camera around the scene.
+		if (numberObject == -1) {
+			getSixAxis(deltaT, m, r, fire);
+		}
+
+
+		static float autoTime = true;
+		static float cTime = 0.0;
+		const float turnTime = 36.0f;
+		const float angTurnTimeFact = 2.0f * M_PI / turnTime;
+
+		if (autoTime) {
+			cTime = cTime + deltaT;
+			cTime = (cTime > turnTime) ? (cTime - turnTime) : cTime;
+		}
+		cTime += r.z * angTurnTimeFact * 4.0;
+
+		const float ROT_SPEED = glm::radians(120.0f);
+		const float MOVE_SPEED = 2.0f;
+
+		CamAlpha = CamAlpha - ROT_SPEED * deltaT * r.y;
+		CamBeta = CamBeta - ROT_SPEED * deltaT * r.x;
+		CamBeta = CamBeta < glm::radians(-90.0f) ? glm::radians(-90.0f) :
+			(CamBeta > glm::radians(90.0f) ? glm::radians(90.0f) : CamBeta);
+
+		glm::vec3 ux = glm::rotate(glm::mat4(1.0f), CamAlpha, glm::vec3(0, 1, 0)) * glm::vec4(1, 0, 0, 1);
+		glm::vec3 uz = glm::rotate(glm::mat4(1.0f), CamAlpha, glm::vec3(0, 1, 0)) * glm::vec4(0, 0, 1, 1);
+
+		// Movement in the camera's local space
+		moveRight = m.x * ux * MOVE_SPEED * deltaT;
+		moveUp = m.y * glm::vec3(0, 1, 0) * MOVE_SPEED * deltaT;
+		moveForward = m.z * uz * MOVE_SPEED * deltaT;
 	}
 	//function to get the key pressed by the user
 	void getKeyPressed(GLFWwindow *window, static bool &debounce, static int &curDebounce ) {
@@ -927,41 +964,10 @@ class Project : public BaseProject {
 		static bool debounce = false;
 		static int curDebounce = 0;
 
-		float deltaT = 0.0f;
-		glm::vec3 m = glm::vec3(0.0f), r = glm::vec3(0.0f);
-		bool fire = false;
-		// Just when one of the object is not in focus mode the user can move the camera around the scene.
-		if (numberObject == -1) {
-			getSixAxis(deltaT, m, r, fire);
-		}
-
-
-		static float autoTime = true;
-		static float cTime = 0.0;
-		const float turnTime = 36.0f;
-		const float angTurnTimeFact = 2.0f * M_PI / turnTime;
-
-		if (autoTime) {
-			cTime = cTime + deltaT;
-			cTime = (cTime > turnTime) ? (cTime - turnTime) : cTime;
-		}
-		cTime += r.z * angTurnTimeFact * 4.0;
-
-		const float ROT_SPEED = glm::radians(120.0f);
-		const float MOVE_SPEED = 2.0f;
-
-		CamAlpha = CamAlpha - ROT_SPEED * deltaT * r.y;
-		CamBeta = CamBeta - ROT_SPEED * deltaT * r.x;
-		CamBeta = CamBeta < glm::radians(-90.0f) ? glm::radians(-90.0f) :
-			(CamBeta > glm::radians(90.0f) ? glm::radians(90.0f) : CamBeta);
-
-		glm::vec3 ux = glm::rotate(glm::mat4(1.0f), CamAlpha, glm::vec3(0, 1, 0)) * glm::vec4(1, 0, 0, 1);
-		glm::vec3 uz = glm::rotate(glm::mat4(1.0f), CamAlpha, glm::vec3(0, 1, 0)) * glm::vec4(0, 0, 1, 1);
-
-		// Movement in the camera's local space
-		glm::vec3 moveRight = m.x * ux * MOVE_SPEED * deltaT;
-		glm::vec3 moveUp = m.y * glm::vec3(0, 1, 0) * MOVE_SPEED * deltaT;
-		glm::vec3 moveForward = m.z * uz * MOVE_SPEED * deltaT;
+		
+		glm::vec3 moveRight, moveUp,moveForward;
+		getMovementAndRotationCamera(moveRight, moveUp, moveForward);
+		
 		// Combine movement vectors
 		glm::vec3 potentialMove = moveRight + moveUp + moveForward;
 		glm::vec3 newCamPos = CamPos + potentialMove;	// Temp variable to check whether the potential movement we are trying to input results in a collision
@@ -1067,7 +1073,7 @@ class Project : public BaseProject {
 		}
 		else {
 			// An object is on focus and so the FOV of the camera is changed to focus on the object
-			focusFunction();
+			focusFunction(moveRight,moveUp,moveForward);
 			//std::cout << "focus = " << focus << ";\n";
 			M = glm::perspective(glm::radians(FOV), Ar, 0.1f, 50.0f);
 			M[1][1] *= -1;

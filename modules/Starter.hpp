@@ -1915,16 +1915,16 @@ std::cout << "Starting createInstance()\n"  << std::flush;
 			r.x = -m_dy / MOUSE_RES;
 		}
 
-		if (glfwGetKey(window, GLFW_KEY_H)) {
+		if (glfwGetKey(window, GLFW_KEY_RIGHT)) {
 			r.y = -1.0f;
 		}
-		if (glfwGetKey(window, GLFW_KEY_K)) {
+		if (glfwGetKey(window, GLFW_KEY_LEFT)) {
 			r.y = 1.0f;
 		}
-		if (glfwGetKey(window, GLFW_KEY_U)) {
+		if (glfwGetKey(window, GLFW_KEY_DOWN)) {
 			r.x = -1.0f;
 		}
-		if (glfwGetKey(window, GLFW_KEY_J)) {
+		if (glfwGetKey(window, GLFW_KEY_UP)) {
 			r.x = 1.0f;
 		}
 
@@ -1932,10 +1932,10 @@ std::cout << "Starting createInstance()\n"  << std::flush;
 	//to move focused object
 	void focusGetAxis(float& deltaT,
 		float& focus) {
-		if (glfwGetKey(window, GLFW_KEY_UP)) {
+		if (glfwGetKey(window, GLFW_KEY_W)) {
 			focus = -1.0f;
 		}
-		if (glfwGetKey(window, GLFW_KEY_DOWN)) {
+		if (glfwGetKey(window, GLFW_KEY_S)) {
 			focus = 1.0f;
 		}
 
