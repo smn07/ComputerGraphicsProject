@@ -1,19 +1,24 @@
 #version 450
 #extension GL_ARB_separate_shader_objects : enable
 
+
+//variables from vertex shader
 layout(location = 0) in vec2 fragTexCoord;
 layout(location = 1) in vec3 fragNorm;
 layout(location = 2) in vec3 fragPos;
 
+//variables to the next stage of the pipeline
 layout(location = 0) out vec4 outColor;
 
+//texture
 layout(set=1,binding = 1) uniform sampler2D room;
 
-
+//binding 2 of the set 1 to get the selection
 layout(set=1,binding = 2) uniform selectedUniformBufferObject {
 	int selected;
 } selection;
 
+// Global uniform buffer object for DSGlobal and binding 0
 layout(set=0,binding = 0) uniform GlobalUniformBufferObjectFocus {
 	vec3 lightDir[5];
 	vec3 lightPos[5];

@@ -1,20 +1,27 @@
 #version 450
 #extension GL_ARB_separate_shader_objects : enable
 
+//these are the variables that are passed from the vertex shader to the fragment shader matching the location
+
 layout(location = 0) in vec2 fragTexCoord;
 layout(location = 1) in vec3 fragNorm;
 layout(location = 2) in vec3 fragPos;
 
-
+// here we are selecting the DS of the object (set=1) and the uniform buffer object (binding=2) used for the selection
 layout(set=1,binding = 2) uniform selectedUniformBufferObject {
 	int selected;
 } selection;
 
+//variable that will be passed to the next stage of the pipeline
 layout(location = 0) out vec4 outColor;
 
 //texture coming from the application code (initial phase)
+
+//here in binding=1 we are selecting the texture that will be used for the armchair
 layout(set = 1, binding = 1) uniform sampler2D armChair;
 
+
+//binding 0 is the global uniform buffer object that contains the light information
 layout(set=0,binding = 0) uniform GlobalUniformBufferObjectFocus {
 	vec3 lightDir[5];
 	vec3 lightPos[5];
