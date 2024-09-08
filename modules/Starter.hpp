@@ -1827,19 +1827,7 @@ std::cout << "Starting createInstance()\n"  << std::flush;
 		deltaT = time - lastTime;
 		lastTime = time;
 
-		static double old_xpos = 0, old_ypos = 0;
-		double xpos, ypos;
-		glfwGetCursorPos(window, &xpos, &ypos);
-		double m_dx = xpos - old_xpos;
-		double m_dy = ypos - old_ypos;
-		old_xpos = xpos; old_ypos = ypos;
-
-		const float MOUSE_RES = 10.0f;				
-		glfwSetInputMode(window, GLFW_STICKY_MOUSE_BUTTONS, GLFW_TRUE);
-		if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
-			r.y = -m_dx / MOUSE_RES;
-			r.x = -m_dy / MOUSE_RES;
-		}
+		
 
 		if(glfwGetKey(window, GLFW_KEY_LEFT)) {
 			r.y = -0.5f;
@@ -1901,19 +1889,7 @@ std::cout << "Starting createInstance()\n"  << std::flush;
 		deltaT = time - lastTime;
 		lastTime = time;
 
-		static double old_xpos = 0, old_ypos = 0;
-		double xpos, ypos;
-		glfwGetCursorPos(window, &xpos, &ypos);
-		double m_dx = xpos - old_xpos;
-		double m_dy = ypos - old_ypos;
-		old_xpos = xpos; old_ypos = ypos;
-
-		const float MOUSE_RES = 10.0f;
-		glfwSetInputMode(window, GLFW_STICKY_MOUSE_BUTTONS, GLFW_TRUE);
-		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
-			r.y = -m_dx / MOUSE_RES;
-			r.x = -m_dy / MOUSE_RES;
-		}
+		
 
 		if (glfwGetKey(window, GLFW_KEY_RIGHT)) {
 			r.y = -1.0f;

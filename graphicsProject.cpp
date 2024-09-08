@@ -49,7 +49,6 @@ struct RoomUniformBufferObject {
 	alignas(16) glm::mat4 mvpMat; // Model View Projection Matrix which indicates the position of the object in the scene
 	alignas(16) glm::mat4 mMat;  // World Matrix which indicates the position of the object in the world
 	alignas(16) glm::mat4 nMat;  // Normal Matrix which indicates the normal of the object (used for some renderings)
-	//alignas(4) int selected;
 };
 
 // uniform buffer for the selected object, we decided to use a different uniform buffer for the selected object
@@ -90,13 +89,13 @@ struct AABB {
 	AABB() {}
 
 
-void setSelection(bool s) {
-	selected = s;
-} 
+	void setSelection(bool s) {
+		selected = s;
+	} 
 
-bool isSelected() {
-	return selected;
-}
+	bool isSelected() {
+		return selected;
+	}
 };
 
 const int numLight = 4;
@@ -808,18 +807,6 @@ class Project : public BaseProject {
 		//This is a function written in the Starter.hpp file that allows to get the axis of the object that is focused by the camera
 		moveObj(deltaTime, m2, r2, fire2);
 
-
-		static float autoTime2 = true;
-		static float cTime2 = 0.0;
-		const float turnTime2 = 36.0f;
-		const float angTurnTimeFact2 = 2.0f * M_PI / turnTime2;
-
-		if (autoTime2) {
-			cTime2 = cTime2 + deltaTime;
-			cTime2 = (cTime2 > turnTime2) ? (cTime2 - turnTime2) : cTime2;
-		}
-		cTime2 += r2.z * angTurnTimeFact2 * 4.0;
-
 		const float ROT_SPEED2 = glm::radians(120.0f);
 		const float MOVE_SPEED2 = 2.0f;
 
@@ -856,17 +843,6 @@ class Project : public BaseProject {
 			getSixAxis(deltaT, m, r, fire);  //this function is written in the Starter.hpp file and it allows to get the movement of the camera
 		}
 
-
-		static float autoTime = true;
-		static float cTime = 0.0;
-		const float turnTime = 36.0f;
-		const float angTurnTimeFact = 2.0f * M_PI / turnTime;
-
-		if (autoTime) {
-			cTime = cTime + deltaT;
-			cTime = (cTime > turnTime) ? (cTime - turnTime) : cTime;
-		}
-		cTime += r.z * angTurnTimeFact * 4.0;
 
 		const float ROT_SPEED = glm::radians(120.0f);
 		const float MOVE_SPEED = 2.0f;
@@ -1068,12 +1044,8 @@ class Project : public BaseProject {
 			if (allowZ) CamPos += moveForward;
 		}
 
-		static float subpassTimer = 0.0;
 		//Function to understand which key is pressed by the user
 		getKeyPressed(window, debounce, curDebounce);
-		
-
-		
 
 		//Perspective matrix when focus is not active and when focus is active
 		glm::mat4 M;
@@ -1085,14 +1057,13 @@ class Project : public BaseProject {
 		else {
 			// An object is on focus and so the FOV of the camera is changed to focus on the object
 			focusFunction();
-			//std::cout << "focus = " << focus << ";\n";
 			M = glm::perspective(glm::radians(FOV), Ar, 0.1f, 50.0f);
 			M[1][1] *= -1;
 		}
 		//View matrix of the camera
 		glm::mat4 Mv = glm::rotate(glm::mat4(1.0), -CamBeta, glm::vec3(1, 0, 0)) *
-			glm::rotate(glm::mat4(1.0), -CamAlpha, glm::vec3(0, 1, 0)) *
-			glm::translate(glm::mat4(1.0), -CamPos);
+		glm::rotate(glm::mat4(1.0), -CamAlpha, glm::vec3(0, 1, 0)) *
+		glm::translate(glm::mat4(1.0), -CamPos);
 		//View perspective matrix
 		glm::mat4 ViewPrj = M * Mv;
 		glm::mat4 baseTr = glm::mat4(1.0f);
@@ -1391,7 +1362,7 @@ class Project : public BaseProject {
 		glm::vec3 cameraForward = -glm::vec3(Mv[0][2], Mv[1][2], Mv[2][2]);
 		glm::vec3 objectPosition = CamPos + cameraForward * 2.0f;
 		cursorUbo.mMat = glm::translate(glm::mat4(1.0f), objectPosition) * glm::scale(glm::mat4(1), glm::vec3(0.01, 0.01, 0.01)) * baseTr;
-		cursorUbo.mvpMat = ViewPrj  *cursorUbo.mMat;
+		cursorUbo.mvpMat = ViewPrj  * cursorUbo.mMat;
 		cursorUbo.nMat = glm::inverse(glm::transpose(cursorUbo.mMat));
 		DScursor.map(currentImage, &cursorUbo, 0);
 
@@ -1419,7 +1390,7 @@ class Project : public BaseProject {
 						CamPos = glm::vec3(0.0, -2.5, -7);//cam position during the focus
 						CamAlpha = 0.0f;//cam rotation
 						CamBeta = 0.0f;//cam rotation
-						lightOn = glm::vec4(0, 0,0, 0);// turn off the light except for the spot light
+						lightOn = glm::vec4(0,0,0,0);// turn off the light except for the spot light
 						std::cout << "Object selected: " << object.object << "\n";
 
 

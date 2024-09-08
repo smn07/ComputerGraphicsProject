@@ -48,7 +48,7 @@ vec3 spot_light_color(vec3 pos, int i)
     // Cosine of half of the outer angle in <gubo.cosOut>
     return point_light_color(pos, i) * clamp((dot(normalize(gubo.lightPos[i] - pos), gubo.lightDir[i]) - gubo.cosOut) / (gubo.cosIn - gubo.cosOut), 0.0f, 1.0f);
     // return vec3(1,0,0);
-}vec3 BRDF(vec3 Norm, vec3 EyeDir, vec3 lightDir, vec3 lightColor, float Pow, vec3 md){	vec3 Diffuse = texture(tex, fragUV).rgb * 0.975f * max(dot(Norm, lightDir),0.0);	vec3 Specular = md * vec3(pow(max(dot(Norm, normalize(lightDir + EyeDir)),0.0), Pow));
+}//BLINNvec3 BRDF(vec3 Norm, vec3 EyeDir, vec3 lightDir, vec3 lightColor, float Pow, vec3 md){	vec3 Diffuse = texture(tex, fragUV).rgb * 0.975f * max(dot(Norm, lightDir),0.0);	vec3 Specular = md * vec3(pow(max(dot(Norm, normalize(lightDir + EyeDir)),0.0), Pow));
 	vec3 Result = Diffuse + Specular;	return Result;}void main() {
 	vec3 Norm = normalize(fragNorm);
 	vec3 EyeDir = normalize(gubo.eyePos - fragPos);	vec3 md = texture(tex, fragUV).rgb;	vec3 col = vec3(0.0f,0.0f,0.0f);	float Pow = mubo.Pow;		vec3 lightDir = normalize(gubo.lightDir[0]);	vec3 lightColor = gubo.lightColor[0].rgb;
@@ -58,5 +58,16 @@ vec3 spot_light_color(vec3 pos, int i)
 	brdf = BRDF(Norm, EyeDir, lightDir, lightColor, Pow, md);	col  += brdf * lightColor * gubo.lightOn.w;	
 	lightDir = normalize(gubo.lightDir[3]);	lightColor = gubo.lightColor[3].rgb;
 	brdf = BRDF(Norm, EyeDir, lightDir, lightColor, Pow, md);	col  += brdf * lightColor * mubo.selected;
+
+	const vec3 cxp = vec3(1.0,0.5,0.5) * 0.2;
+	const vec3 cxn = vec3(0.9,0.6,0.4) * 0.2;
+	const vec3 cyp = vec3(0.3,1.0,1.0) * 0.2;
+	const vec3 cyn = vec3(0.5,0.5,0.5) * 0.2;
+	const vec3 czp = vec3(0.8,0.2,0.4) * 0.2;
+	const vec3 czn = vec3(0.3,0.6,0.7) * 0.2;
 	
+	vec3 Ambient =((Norm.x > 0 ? cxp : cxn) * (Norm.x * Norm.x) +
+					(Norm.y > 0 ? cyp : cyn) * (Norm.y * Norm.y) +
+					(Norm.z > 0 ? czp : czn) * (Norm.z * Norm.z)) * md;
+	col+=Ambient;
 	outColor = vec4(col, 1.0f);}

@@ -46,9 +46,7 @@ vec3 spot_light_dir(vec3 pos, int i)
     // Spot light - direction vector
     // Direction of the light in <gubo.lightDir[i]>
     // Position of the light in <gubo.lightPos[i]>
-   // gubo.lightDir[i] = normalize(gubo.lightDir[i]);
     return normalize(gubo.lightPos[i] - pos);
-    // return vec3(1,0,0);
 }
 
 vec3 spot_light_color(vec3 pos, int i)
@@ -63,7 +61,7 @@ vec3 spot_light_color(vec3 pos, int i)
     // Cosine of half of the inner angle in <gubo.cosIn>
     // Cosine of half of the outer angle in <gubo.cosOut>
     return point_light_color(pos, i) * clamp((dot(normalize(gubo.lightPos[i] - pos), gubo.lightDir[i]) - gubo.cosOut) / (gubo.cosIn - gubo.cosOut), 0.0f, 1.0f);
-    // return vec3(1,0,0);
+    
 }
 float D_cookTorrance(vec3 halfVector, vec3 normalVector, float roughness) {
 	float numerator=exp(-(1 - (pow(dot(halfVector, normalVector), 2))) / (pow(dot(halfVector, normalVector), 2) * pow(roughness, 2)));
@@ -87,7 +85,9 @@ vec3 BRDF(vec3 objectColor, vec3 Norm, vec3 EyeDir, vec3 LD,vec3 halfVector) {
 	float D= D_cookTorrance(halfVector, Norm, 0.2f);
 	float G= G_cookTorrance(halfVector, Norm, LD, EyeDir);
 	float F= F_cookTorrance(halfVector, EyeDir, 0.05);
+	//CookTorrance
 	Specular =  vec3(1,1,1)*(D * G * F / (4 * clamp(dot(EyeDir,Norm),0.000001,1)));
+	//Lambert
 	Diffuse = objectColor * max(dot(Norm, LD),0.0f);
 
 	return Diffuse + Specular ;
@@ -105,32 +105,44 @@ void main() {
 	vec3 RendEqSol = vec3(0);
 	vec3 halfVec= vec3(0);
 	
-		// First light
-		LD = point_light_dir(fragPos, 0);
-		LC = point_light_color(fragPos, 0);
-		halfVec= normalize(LD + EyeDir);
-		RendEqSol += BRDF(md, Norm, EyeDir, LD,halfVec) * LC* gubo.lightOn.x;
-		// second light
-		LD = point_light_dir(fragPos, 1);
-		LC = point_light_color(fragPos, 1);
-		halfVec= normalize(LD + EyeDir);
-		RendEqSol += BRDF(md, Norm, EyeDir, LD,halfVec) * LC * gubo.lightOn.y;// point light
-		// thirt light
-		LD = point_light_dir(fragPos,2);
-		LC = point_light_color(fragPos,2);
-		halfVec= normalize(LD + EyeDir);
-		RendEqSol += BRDF(md, Norm, EyeDir, LD,halfVec) * LC * gubo.lightOn.z;// point light
-		// Fourth light
-		LD = point_light_dir(fragPos, 3);
-		LC = point_light_color(fragPos, 3);
-		halfVec= normalize(LD + EyeDir);
-		RendEqSol += BRDF(md, Norm, EyeDir, LD,halfVec) * LC * gubo.lightOn.w;// point light
+	// First light
+	LD = point_light_dir(fragPos, 0);
+	LC = point_light_color(fragPos, 0);
+	halfVec= normalize(LD + EyeDir);
+	RendEqSol += BRDF(md, Norm, EyeDir, LD,halfVec) * LC* gubo.lightOn.x;
+	// second light
+	LD = point_light_dir(fragPos, 1);
+	LC = point_light_color(fragPos, 1);
+	halfVec= normalize(LD + EyeDir);
+	RendEqSol += BRDF(md, Norm, EyeDir, LD,halfVec) * LC * gubo.lightOn.y;// point light
+	// thirt light
+	LD = point_light_dir(fragPos,2);
+	LC = point_light_color(fragPos,2);
+	halfVec= normalize(LD + EyeDir);
+	RendEqSol += BRDF(md, Norm, EyeDir, LD,halfVec) * LC * gubo.lightOn.z;// point light
+	// Fourth light
+	LD = point_light_dir(fragPos, 3);
+	LC = point_light_color(fragPos, 3);
+	halfVec= normalize(LD + EyeDir);
+	RendEqSol += BRDF(md, Norm, EyeDir, LD,halfVec) * LC * gubo.lightOn.w;// point light
 	
-		LD = spot_light_dir(fragPos, 4);
-		LC = spot_light_color(fragPos, 4);
-		halfVec= normalize(LD + EyeDir);
-		RendEqSol += BRDF(md, Norm, EyeDir, LD,halfVec) * LC* selection.selected;
+	LD = spot_light_dir(fragPos, 4);
+	LC = spot_light_color(fragPos, 4);
+	halfVec= normalize(LD + EyeDir);
+	RendEqSol += BRDF(md, Norm, EyeDir, LD,halfVec) * LC* selection.selected;
 
+	const vec3 cxp = vec3(1.0,0.5,0.5) * 0.2;
+	const vec3 cxn = vec3(0.9,0.6,0.4) * 0.2;
+	const vec3 cyp = vec3(0.3,1.0,1.0) * 0.2;
+	const vec3 cyn = vec3(0.5,0.5,0.5) * 0.2;
+	const vec3 czp = vec3(0.8,0.2,0.4) * 0.2;
+	const vec3 czn = vec3(0.3,0.6,0.7) * 0.2;
+	
+	vec3 Ambient =((Norm.x > 0 ? cxp : cxn) * (Norm.x * Norm.x) +
+				   (Norm.y > 0 ? cyp : cyn) * (Norm.y * Norm.y) +
+				   (Norm.z > 0 ? czp : czn) * (Norm.z * Norm.z)) * md;
+
+	RendEqSol+=Ambient;
 	
 	//output color
 	outColor = vec4(RendEqSol,1);
