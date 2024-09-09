@@ -59,15 +59,5 @@ vec3 spot_light_color(vec3 pos, int i)
 	lightDir = normalize(gubo.lightDir[3]);	lightColor = gubo.lightColor[3].rgb;
 	brdf = BRDF(Norm, EyeDir, lightDir, lightColor, Pow, md);	col  += brdf * lightColor * mubo.selected;
 
-	const vec3 cxp = vec3(1.0,0.5,0.5) * 0.2;
-	const vec3 cxn = vec3(0.9,0.6,0.4) * 0.2;
-	const vec3 cyp = vec3(0.3,1.0,1.0) * 0.2;
-	const vec3 cyn = vec3(0.5,0.5,0.5) * 0.2;
-	const vec3 czp = vec3(0.8,0.2,0.4) * 0.2;
-	const vec3 czn = vec3(0.3,0.6,0.7) * 0.2;
-	
-	vec3 Ambient =((Norm.x > 0 ? cxp : cxn) * (Norm.x * Norm.x) +
-					(Norm.y > 0 ? cyp : cyn) * (Norm.y * Norm.y) +
-					(Norm.z > 0 ? czp : czn) * (Norm.z * Norm.z)) * md;
-	col+=Ambient;
+
 	outColor = vec4(col, 1.0f);}
